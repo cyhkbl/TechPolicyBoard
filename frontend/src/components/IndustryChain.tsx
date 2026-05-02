@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Map, Cpu, FileText, Factory, ChevronLeft, Target } from 'lucide-react';
 import type { Region } from '../types';
@@ -12,6 +12,24 @@ interface IndustryChainProps {
   regions?: Region[];
 }
 
+// Well-spread initial positions (percentage of container, 0-100)
+const INITIAL_POSITIONS: Record<string, { x: number; y: number }> = {
+  beijing:      { x: 52, y: 14 },
+  shanghai:     { x: 78, y: 42 },
+  guangdong:    { x: 68, y: 74 },
+  jiangsu:      { x: 82, y: 28 },
+  anhui:        { x: 62, y: 42 },
+  sichuan:      { x: 22, y: 62 },
+  zhejiang:     { x: 82, y: 58 },
+  international:{ x: 12, y: 28 },
+};
+
+function getInitialPos(region: Region) {
+  return INITIAL_POSITIONS[region.id] ?? { x: region.coordinates.x, y: region.coordinates.y };
+}
+
+const NODE_SIZE = 44; // px
+
 export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNavigateToPolicy, regions }: IndustryChainProps) {
   const dataset = regions ?? REGIONS;
   const regionsById = useMemo(
@@ -20,77 +38,158 @@ export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNav
   );
   const [selected, setSelected] = useState<Region | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  // Pixel positions per node. Seed with fallback values so nodes always render.
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(() => {
+    const fallbackW = 560;
+    const fallbackH = 440;
+    const seed: Record<string, { x: number; y: number }> = {};
+    dataset.forEach(r => {
+      const pct = getInitialPos(r);
+      seed[r.id] = { x: (pct.x / 100) * fallbackW - NODE_SIZE / 2, y: (pct.y / 100) * fallbackH - NODE_SIZE / 2 };
+    });
+    return seed;
+  });
+
+  // Initialise positions once container is measured — useLayoutEffect + ResizeObserver
+  // to handle the case where getBoundingClientRect() is 0 on first paint.
+  useLayoutEffect(() => {
+    const el = mapRef.current;
+    if (!el) return;
+
+    const init = () => {
+      const { width, height } = el.getBoundingClientRect();
+      if (width === 0 || height === 0) return;
+      const next: Record<string, { x: number; y: number }> = {};
+      dataset.forEach(r => {
+        const pct = getInitialPos(r);
+        next[r.id] = {
+          x: (pct.x / 100) * width - NODE_SIZE / 2,
+          y: (pct.y / 100) * height - NODE_SIZE / 2,
+        };
+      });
+      setPositions(next);
+    };
+
+    init();
+    const ro = new ResizeObserver(init);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [dataset]);
+
+  const updatePos = useCallback((id: string, x: number, y: number) => {
+    setPositions(prev => ({ ...prev, [id]: { x, y } }));
+  }, []);
 
   useEffect(() => {
     if (!focusIndustryId) return;
     const byRegion = regionsById[focusIndustryId];
-    if (byRegion) {
-      setSelected(byRegion);
-      return;
-    }
+    if (byRegion) { setSelected(byRegion); return; }
     const byScenario = dataset.find(r => r.scenarios.some(s => s.technologies.includes(focusIndustryId)));
     if (byScenario) setSelected(byScenario);
   }, [focusIndustryId, dataset, regionsById]);
 
-  const renderMap = () => (
-    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-      <path
-        d="M20 20 L80 15 L95 40 L85 85 L60 95 L25 85 L10 50 Z"
-        fill="none"
-        stroke="#141414"
-        strokeWidth="0.2"
-        strokeDasharray="1 2"
-        className="opacity-20"
-      />
-      <g className="opacity-30">
-        {dataset.map((a, i) => dataset.slice(i + 1).map(b => {
-          const dx = a.coordinates.x - b.coordinates.x;
-          const dy = a.coordinates.y - b.coordinates.y;
-          if (Math.hypot(dx, dy) > 28) return null;
-          return (
-            <line
-              key={`${a.id}-${b.id}`}
-              x1={a.coordinates.x} y1={a.coordinates.y}
-              x2={b.coordinates.x} y2={b.coordinates.y}
-              stroke="#141414" strokeWidth="0.4"
-            />
-          );
-        }))}
-      </g>
+  const renderMap = () => {
+    const containerEl = mapRef.current;
+    const w = containerEl?.offsetWidth ?? 600;
+    const h = containerEl?.offsetHeight ?? 500;
 
-      {dataset.map(region => {
-        const isHovered = hovered === region.id;
-        return (
-          <g
-            key={region.id}
-            transform={`translate(${region.coordinates.x}, ${region.coordinates.y})`}
-            onMouseEnter={() => setHovered(region.id)}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => setSelected(region)}
-            className="cursor-pointer"
-          >
-            {isHovered && <circle r="6" fill="#f97316" className="opacity-20 animate-ping" />}
-            <circle r={isHovered ? '3.5' : '2'} fill={isHovered ? '#f97316' : '#141414'} className="transition-all duration-300" />
-            <circle
-              r="6"
-              fill="transparent"
-              stroke={isHovered ? '#f97316' : '#141414'}
-              strokeWidth="0.3"
-              strokeDasharray="0.5 1"
-              className={cn('transition-all duration-500', isHovered ? 'rotate-180' : '')}
-              style={{ transformOrigin: 'center' }}
-            />
-            <text x="5" y="-4" className={cn('text-[2.5px] font-bold font-mono tracking-widest transition-all', isHovered ? 'fill-[#f97316]' : 'fill-[#141414]')}>
-              {region.englishName.toUpperCase()}
-            </text>
-            <text x="5" y="0" className={cn('text-[2px] transition-all', isHovered ? 'fill-[#141414] font-bold' : 'fill-[#141414] opacity-50')}>
-              {region.name}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
+    // Centre of each node for line drawing
+    const center = (id: string) => {
+      const p = positions[id];
+      if (!p) return null;
+      return { x: p.x + NODE_SIZE / 2, y: p.y + NODE_SIZE / 2 };
+    };
+
+    return (
+      <div ref={mapRef} className="relative w-full h-full overflow-hidden select-none">
+        {/* Connection lines SVG beneath nodes */}
+        <svg
+          className="absolute inset-0 pointer-events-none"
+          width={w} height={h}
+        >
+          {dataset.map((a, i) => dataset.slice(i + 1).map(b => {
+            const ca = center(a.id);
+            const cb = center(b.id);
+            if (!ca || !cb) return null;
+            const dist = Math.hypot(ca.x - cb.x, ca.y - cb.y);
+            if (dist > 300) return null;
+            const isActive = hovered === a.id || hovered === b.id;
+            return (
+              <line
+                key={`${a.id}-${b.id}`}
+                x1={ca.x} y1={ca.y} x2={cb.x} y2={cb.y}
+                stroke={isActive ? '#f97316' : '#141414'}
+                strokeWidth={isActive ? 1.5 : 0.8}
+                strokeDasharray={isActive ? '0' : '4 4'}
+                opacity={isActive ? 0.5 : 0.15}
+                style={{ transition: 'all 200ms' }}
+              />
+            );
+          }))}
+        </svg>
+
+        {/* Draggable nodes */}
+        {dataset.map(region => {
+          const pos = positions[region.id];
+          if (!pos) return null;
+          const isHov = hovered === region.id;
+
+          return (
+            <motion.div
+              key={region.id}
+              drag
+              dragMomentum={false}
+              dragElastic={0}
+              dragConstraints={mapRef}
+              onDragEnd={(_, info) => {
+                updatePos(region.id, pos.x + info.offset.x, pos.y + info.offset.y);
+              }}
+              onMouseEnter={() => setHovered(region.id)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={() => setSelected(region)}
+              style={{ position: 'absolute', left: pos.x, top: pos.y, width: NODE_SIZE, height: NODE_SIZE, cursor: 'grab' }}
+              whileDrag={{ cursor: 'grabbing', zIndex: 10, scale: 1.1 }}
+              className="z-10"
+            >
+              {/* Outer ring */}
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-full border transition-all duration-300',
+                  isHov ? 'border-[#f97316] scale-125 opacity-30 bg-[#f97316]' : 'border-[#141414]/20 opacity-0',
+                )}
+                style={{ transform: isHov ? 'scale(1.5)' : 'scale(1)' }}
+              />
+              {/* Node dot */}
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-full border-2 flex items-center justify-center transition-all duration-200',
+                  isHov
+                    ? 'border-[#f97316] bg-[#f97316]/10 shadow-[0_0_16px_rgba(249,115,22,0.4)]'
+                    : 'border-[#141414]/40 bg-[#E4E3E0]',
+                )}
+              >
+                <div className={cn('w-2 h-2 rounded-full transition-all', isHov ? 'bg-[#f97316] scale-150' : 'bg-[#141414]')} />
+              </div>
+              {/* Label */}
+              <div
+                className={cn(
+                  'absolute top-full left-1/2 -translate-x-1/2 mt-1.5 whitespace-nowrap text-center pointer-events-none transition-all duration-200',
+                  isHov ? 'opacity-100' : 'opacity-70',
+                )}
+              >
+                <div className={cn('text-[10px] font-mono font-bold tracking-widest', isHov ? 'text-[#f97316]' : 'text-[#141414]')}>
+                  {region.englishName.toUpperCase()}
+                </div>
+                <div className="text-[11px] text-[#141414] font-bold">{region.name}</div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="relative w-full h-full text-[#141414] font-sans flex overflow-hidden bg-[#efedea]">
@@ -111,7 +210,7 @@ export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNav
                   <Map className="w-3 h-3" /> Select a hub to analyze
                 </div>
               </div>
-              <div className="w-full max-w-lg aspect-square relative mt-16">
+              <div className="flex-1 relative mt-16 pb-4 min-h-0 w-full">
                 {renderMap()}
               </div>
             </div>
