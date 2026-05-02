@@ -1,26 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TrendingUp, Activity, Flame, Snowflake, Target, AlertCircle, Search } from 'lucide-react';
-import type { ChainItem, TechnologyType } from '../types';
+import type { ChainItem, ChainLayer, FundingEvent, TechnologyType } from '../types';
 import { POLICY_DATA, FUNDING_EVENTS, CHAIN_MAP } from '../constants';
 import { cn } from '../lib/utils';
 
 interface MarketTrendsProps {
   activeTech?: TechnologyType;
   onNavigateToPolicy?: (policyId: string) => void;
+  chain?: ChainLayer[];
+  fundingEvents?: FundingEvent[];
 }
 
-export default function MarketTrends({ activeTech = 'embodied-ai', onNavigateToPolicy }: MarketTrendsProps) {
+export default function MarketTrends({
+  activeTech = 'embodied-ai',
+  onNavigateToPolicy,
+  chain: chainOverride,
+  fundingEvents: fundingOverride,
+}: MarketTrendsProps) {
   const [selectedGap, setSelectedGap] = useState<ChainItem | null>(null);
   const [showInsight, setShowInsight] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const chain = CHAIN_MAP[activeTech] ?? [];
+  const chain = chainOverride ?? CHAIN_MAP[activeTech] ?? [];
 
   const fundingEvents = useMemo(() => {
+    if (fundingOverride && fundingOverride.length > 0) return fundingOverride;
     const forTech = FUNDING_EVENTS.filter(e => e.techId === activeTech);
     return forTech.length ? forTech : FUNDING_EVENTS;
-  }, [activeTech]);
+  }, [activeTech, fundingOverride]);
 
   const policyTimeline = useMemo(() => {
     return POLICY_DATA
