@@ -1,32 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Map, Cpu, FileText, Factory, ChevronLeft, Target } from 'lucide-react';
 import type { Region } from '../types';
-import { REGIONS, REGIONS_BY_ID, POLICY_BY_ID, ALL_SUB_TECHS } from '../constants';
+import { REGIONS, POLICY_BY_ID, ALL_SUB_TECHS } from '../constants';
 import { cn } from '../lib/utils';
 
 interface IndustryChainProps {
   focusIndustryId?: string | null;
   onNavigateToTech?: (techId: string) => void;
   onNavigateToPolicy?: (policyId: string) => void;
+  regions?: Region[];
 }
 
-export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNavigateToPolicy }: IndustryChainProps) {
+export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNavigateToPolicy, regions }: IndustryChainProps) {
+  const dataset = regions ?? REGIONS;
+  const regionsById = useMemo(
+    () => dataset.reduce<Record<string, Region>>((acc, r) => ({ ...acc, [r.id]: r }), {}),
+    [dataset],
+  );
   const [selected, setSelected] = useState<Region | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     if (!focusIndustryId) return;
-    // focusIndustryId may carry industry id (e.g. 'humanoid-robot') or region id. Try both.
-    const byRegion = REGIONS_BY_ID[focusIndustryId];
+    const byRegion = regionsById[focusIndustryId];
     if (byRegion) {
       setSelected(byRegion);
       return;
     }
-    // Fall back to first region whose scenarios mention that industry id
-    const byScenario = REGIONS.find(r => r.scenarios.some(s => s.technologies.includes(focusIndustryId)));
+    const byScenario = dataset.find(r => r.scenarios.some(s => s.technologies.includes(focusIndustryId)));
     if (byScenario) setSelected(byScenario);
-  }, [focusIndustryId]);
+  }, [focusIndustryId, dataset, regionsById]);
 
   const renderMap = () => (
     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
@@ -39,7 +43,7 @@ export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNav
         className="opacity-20"
       />
       <g className="opacity-30">
-        {REGIONS.map((a, i) => REGIONS.slice(i + 1).map(b => {
+        {dataset.map((a, i) => dataset.slice(i + 1).map(b => {
           const dx = a.coordinates.x - b.coordinates.x;
           const dy = a.coordinates.y - b.coordinates.y;
           if (Math.hypot(dx, dy) > 28) return null;
@@ -54,7 +58,7 @@ export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNav
         }))}
       </g>
 
-      {REGIONS.map(region => {
+      {dataset.map(region => {
         const isHovered = hovered === region.id;
         return (
           <g
@@ -117,17 +121,17 @@ export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNav
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                   <div className="space-y-2">
                     <div className="text-[10px] font-mono uppercase tracking-widest text-[#f97316] font-bold border border-[#f97316] inline-block px-1.5 py-0.5">
-                      HUB_ID: {REGIONS_BY_ID[hovered]?.englishName.toUpperCase()}
+                      HUB_ID: {regionsById[hovered]?.englishName.toUpperCase()}
                     </div>
-                    <h3 className="text-4xl font-serif italic">{REGIONS_BY_ID[hovered]?.name}</h3>
+                    <h3 className="text-4xl font-serif italic">{regionsById[hovered]?.name}</h3>
                     <div className="text-xs uppercase font-mono tracking-widest opacity-50 border-b border-[#141414]/30 pb-4">
-                      {REGIONS_BY_ID[hovered]?.englishName}
+                      {regionsById[hovered]?.englishName}
                     </div>
                   </div>
                   <div>
                     <h4 className="text-[10px] font-mono uppercase tracking-widest border-l-2 border-[#141414] pl-2 mb-3 font-bold">产业禀赋 / Endowment</h4>
                     <p className="text-lg leading-relaxed bg-[#141414]/5 p-4 border border-[#141414]/10">
-                      {REGIONS_BY_ID[hovered]?.endowment}
+                      {regionsById[hovered]?.endowment}
                     </p>
                   </div>
                   <div className="text-xs font-mono opacity-50 flex items-center gap-2">

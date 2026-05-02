@@ -45,7 +45,7 @@ export interface Policy {
   country: string;
   department: PolicyDepartment;
   departmentLabel: string;
-  level: 'national' | 'ministerial' | 'local';
+  level: PolicyLevel;
   date: string;
   summary: string;
   fullTextUrl: string;

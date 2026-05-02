@@ -6,13 +6,14 @@ import { POLICY_DATA, DEPT_COLORS, INNOVATION_STAGES, INDUSTRY_BY_ID, ALL_SUB_TE
 import { cn } from '../lib/utils';
 
 type RegionFilter = 'ALL' | 'CHN' | 'USA' | 'EUU' | 'JPN' | 'KOR' | 'GBR' | 'OTH';
-type LevelFilter = 'ALL' | 'national' | 'ministerial' | 'local';
+type LevelFilter = 'ALL' | 'national' | 'ministerial' | 'local' | 'supranational';
 type DomainFilter = 'ALL' | PolicyDepartment;
 
 const LEVEL_LABEL: Record<Exclude<LevelFilter, 'ALL'>, string> = {
   national: '国家级',
   ministerial: '部委级',
   local: '地方级',
+  supranational: '超国家',
 };
 
 interface PolicyTrackerProps {
@@ -20,13 +21,16 @@ interface PolicyTrackerProps {
   onNavigateToIndustry?: (industryId: string) => void;
   currentTech?: TechnologyType;
   focusPolicyId?: string | null;
+  policies?: Policy[];
 }
 
 export default function PolicyTracker({
   onNavigateToTech,
   onNavigateToIndustry,
   focusPolicyId,
+  policies,
 }: PolicyTrackerProps) {
+  const dataset = policies ?? POLICY_DATA;
   const [region, setRegion] = useState<RegionFilter>('ALL');
   const [level, setLevel] = useState<LevelFilter>('ALL');
   const [domain, setDomain] = useState<DomainFilter>('ALL');
@@ -35,22 +39,22 @@ export default function PolicyTracker({
 
   useEffect(() => {
     if (!focusPolicyId) return;
-    const p = POLICY_DATA.find(x => x.id === focusPolicyId);
+    const p = dataset.find(x => x.id === focusPolicyId);
     if (p) {
       setRegion('ALL');
       setLevel('ALL');
       setDomain('ALL');
       setSelected(p);
     }
-  }, [focusPolicyId]);
+  }, [focusPolicyId, dataset]);
 
   const filtered = useMemo(() => {
-    return POLICY_DATA.filter(p =>
+    return dataset.filter(p =>
       (region === 'ALL' || (p.iso3 ?? 'OTH') === region) &&
       (level === 'ALL' || p.level === level) &&
       (domain === 'ALL' || p.department === domain),
     );
-  }, [region, level, domain]);
+  }, [dataset, region, level, domain]);
 
   useEffect(() => {
     let raf = 0;
@@ -72,17 +76,16 @@ export default function PolicyTracker({
 
   const similar = useMemo(() => {
     if (!selected) return [] as Policy[];
-    // Use explicit similarIds if available, else derive from shared relatedTechnologies.
     if (selected.similarIds?.length) {
       return selected.similarIds
-        .map(id => POLICY_DATA.find(p => p.id === id))
+        .map(id => dataset.find(p => p.id === id))
         .filter((p): p is Policy => Boolean(p));
     }
     const techSet = new Set(selected.relatedTechnologies);
-    return POLICY_DATA.filter(p =>
+    return dataset.filter(p =>
       p.id !== selected.id && p.relatedTechnologies.some(t => techSet.has(t)),
     ).slice(0, 5);
-  }, [selected]);
+  }, [selected, dataset]);
 
   return (
     <div className="relative w-full h-full text-high-text font-sans overflow-hidden bg-[#efedea]">
@@ -106,7 +109,7 @@ export default function PolicyTracker({
                   ))}
                 </FilterRow>
                 <FilterRow label="Level">
-                  {(['ALL', 'national', 'ministerial', 'local'] as LevelFilter[]).map(lv => (
+                  {(['ALL', 'national', 'ministerial', 'local', 'supranational'] as LevelFilter[]).map(lv => (
                     <FilterPill key={lv} active={level === lv} onClick={() => setLevel(lv)}>
                       {lv === 'ALL' ? 'ALL' : LEVEL_LABEL[lv]}
                     </FilterPill>
