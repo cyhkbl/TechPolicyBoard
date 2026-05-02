@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowUpRight, GitCommit } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import type { Policy, PolicyDepartment, TechnologyType } from '../types';
 import { POLICY_DATA, DEPT_COLORS, INNOVATION_STAGES, INDUSTRY_BY_ID, ALL_SUB_TECHS } from '../constants';
 import { cn } from '../lib/utils';
@@ -73,19 +73,6 @@ export default function PolicyTracker({
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [filtered, selected]);
-
-  const similar = useMemo(() => {
-    if (!selected) return [] as Policy[];
-    if (selected.similarIds?.length) {
-      return selected.similarIds
-        .map(id => dataset.find(p => p.id === id))
-        .filter((p): p is Policy => Boolean(p));
-    }
-    const techSet = new Set(selected.relatedTechnologies);
-    return dataset.filter(p =>
-      p.id !== selected.id && p.relatedTechnologies.some(t => techSet.has(t)),
-    ).slice(0, 5);
-  }, [selected, dataset]);
 
   return (
     <div className="relative w-full h-full text-high-text font-sans overflow-hidden bg-[#efedea]">
@@ -317,74 +304,6 @@ export default function PolicyTracker({
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
-
-            {/* Correlated */}
-            <div className="h-[280px] shrink-0 bg-high-muted flex flex-col">
-              <div className="h-10 border-b border-high-text flex items-center px-6 bg-high-bg shrink-0 justify-between">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
-                  同类政策联动分析 / Correlated Matrix
-                </span>
-                <span className="text-[9px] font-mono opacity-40">{similar.length} correlated</span>
-              </div>
-              <div className="flex-1 flex overflow-hidden">
-                <div className="w-1/3 border-r border-high-text relative bg-[#E4E3E0]/50 overflow-hidden">
-                  <div className="absolute top-4 left-4 text-[9px] font-mono opacity-50 z-10">
-                    <GitCommit className="w-3 h-3 inline pb-0.5" /> THEMATIC CLUSTERS
-                  </div>
-                  <div className="w-full h-full flex flex-col items-center justify-center p-6 opacity-70">
-                    <div className="w-full aspect-[4/3] border border-high-text/20 flex flex-col gap-2 p-4 bg-white/30 relative">
-                      <div className="w-full h-6 border-2 border-high-text bg-high-bg flex items-center justify-center text-[8px] font-mono font-bold relative z-20">
-                        [ {selected.iso3 ?? '—'} ] BASE_NODE
-                      </div>
-                      <div className="flex flex-1 gap-2 relative mt-2 pt-4 border-t border-dashed border-high-text/30">
-                        <div className="absolute -top-[17px] left-1/2 w-px h-4 bg-high-text/50" />
-                        {similar.length === 0 && (
-                          <div className="w-full text-center text-[8px] font-mono opacity-50 flex items-center justify-center">
-                            NO STRONG CORRELATIONS
-                          </div>
-                        )}
-                        {similar.slice(0, 4).map(sim => (
-                          <div key={sim.id} className="flex-1 border border-high-text bg-high-text/5 flex items-center justify-center relative">
-                            <div className="absolute -top-4 left-1/2 w-px h-4 bg-high-text/30" />
-                            <span className="text-[8px] font-mono text-high-accent font-bold px-1">{sim.iso3 ?? '—'}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-2/3 flex flex-col overflow-y-auto no-scrollbar pt-2 pb-6 px-6">
-                  {similar.length === 0 && (
-                    <div className="flex-1 flex items-center justify-center opacity-30 text-xs font-mono">
-                      No direct similarities mapped yet.
-                    </div>
-                  )}
-                  {similar.map(sim => (
-                    <div
-                      key={sim.id}
-                      className="border-b border-high-text/10 py-5 last:border-b-0 cursor-pointer hover:bg-high-text/5 group"
-                      onClick={() => setSelected(sim)}
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-[9px] font-bold font-mono bg-white border border-high-text px-1 uppercase scale-90">{sim.iso3 ?? '—'}</span>
-                        <span className="text-[8px] font-mono opacity-50 px-1 border border-high-text/20">
-                          {INNOVATION_STAGES.find(s => s.id === sim.innovationStage)?.name ?? '—'}
-                        </span>
-                        <h4 className="font-serif italic text-sm truncate group-hover:text-high-accent transition-colors">
-                          {sim.title}
-                        </h4>
-                      </div>
-                      <p className="text-xs opacity-70 pl-8 border-l border-high-accent/50 ml-[18px] leading-relaxed">
-                        <strong className="font-mono text-[9px] uppercase mr-2 text-high-accent bg-orange-500/10 px-1">
-                          Shared Tech:
-                        </strong>
-                        {sim.relatedTechnologies.slice(0, 3).join('、')}
-                      </p>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
