@@ -148,29 +148,20 @@ export default function PolicyTracker({
                   </p>
                 </div>
 
-                <div className="flex-1 relative flex items-center justify-between pb-8 min-h-[340px]">
+                <div className="flex-1 relative flex items-stretch justify-between pb-8 min-h-[560px]">
                   <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-px bg-high-text/30" />
                   <div className="absolute right-10 top-1/2 border-t border-r border-high-text/50 w-2 h-2 rotate-45 -mt-[5px]" />
 
                   {INNOVATION_STAGES.map((stage, i) => {
                     const stagePolicies = filtered.filter(p => p.innovationStage === stage.id);
                     return (
-                      <div key={stage.id} className="relative z-10 flex flex-col items-center flex-1 h-full pt-[50%]">
-                        <div className="absolute top-1/2 -translate-y-[14px] w-5 h-5 bg-white border-2 border-high-text rotate-45 shadow-[0_0_0_5px_rgba(228,227,224,1)] z-20 flex justify-center items-center">
-                          <div className="w-1.5 h-1.5 bg-high-text" />
-                        </div>
-                        <div className="absolute top-1/2 mt-4 flex flex-col items-center">
-                          <div className="text-[10px] font-bold uppercase tracking-widest font-mono bg-high-text text-white px-2 py-1 shadow-[2px_2px_0_rgba(0,0,0,0.3)]">
-                            {stage.name}
-                          </div>
-                          <div className="text-[9px] font-mono opacity-40 mt-1 uppercase">PHASE 0{i + 1}</div>
-                        </div>
-                        <div className="absolute bottom-1/2 mb-6 flex flex-col-reverse gap-3 items-center">
-                          {stagePolicies.slice(0, 4).map((p, idx) => (
+                      <div key={stage.id} className="relative z-10 flex flex-col items-center flex-1 min-w-0">
+                        <div className="flex-1 w-full flex flex-col-reverse justify-start items-center gap-2 pb-3 overflow-hidden px-2 min-h-0">
+                          {stagePolicies.slice(0, 2).map((p, idx) => (
                             <motion.div
                               key={p.id}
                               onClick={() => setSelected(p)}
-                              className="w-[180px] p-3 border border-high-text bg-white shadow-[4px_4px_0_rgba(0,0,0,0.15)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer group relative"
+                              className="w-[180px] p-3 border border-high-text bg-white shadow-[4px_4px_0_rgba(0,0,0,0.15)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer group relative shrink-0"
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.08 } }}
                             >
@@ -178,14 +169,25 @@ export default function PolicyTracker({
                                 <span>{p.date}</span>
                                 <span className="uppercase text-high-accent font-bold">{LEVEL_LABEL[p.level]}</span>
                               </div>
-                              <div className="font-bold text-xs font-serif leading-tight group-hover:text-high-accent transition-colors line-clamp-3">
+                              <div className="font-bold text-xs font-serif leading-tight group-hover:text-high-accent transition-colors line-clamp-2">
                                 {p.title}
                               </div>
-                              {idx === 0 && (
-                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[1px] h-6 bg-high-text/30 group-hover:bg-high-text/60" />
-                              )}
                             </motion.div>
                           ))}
+                          {stagePolicies.length > 2 && (
+                            <div className="text-[9px] font-mono opacity-40 uppercase tracking-widest">
+                              +{stagePolicies.length - 2} more
+                            </div>
+                          )}
+                        </div>
+                        <div className="relative w-5 h-5 bg-white border-2 border-high-text rotate-45 shadow-[0_0_0_5px_rgba(228,227,224,1)] z-20 flex justify-center items-center shrink-0">
+                          <div className="w-1.5 h-1.5 bg-high-text" />
+                        </div>
+                        <div className="flex-1 flex flex-col items-center pt-5 shrink-0 min-h-0">
+                          <div className="text-[10px] font-bold uppercase tracking-widest font-mono bg-high-text text-white px-2 py-1 shadow-[2px_2px_0_rgba(0,0,0,0.3)]">
+                            {stage.name}
+                          </div>
+                          <div className="text-[9px] font-mono opacity-40 mt-1 uppercase">PHASE 0{i + 1}</div>
                         </div>
                       </div>
                     );
