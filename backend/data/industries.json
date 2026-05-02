@@ -1,0 +1,160 @@
+{
+  "industries": [
+    {
+      "id": "compute-grid",
+      "name": "算力网",
+      "tagline": "全国一体化算力网络，AI 时代的电网",
+      "description": "把分散在东西部的数据中心、超算、智算中心通过高速网络互联，按任务自动调度算力资源，让训练大模型像用电一样方便。",
+      "nationalPlanRef": "十五五数字基础设施 / 东数西算",
+      "chainStages": [
+        {
+          "id": "gpu-chip",
+          "name": "GPU / 加速芯片",
+          "shortLabel": "芯片",
+          "description": "高性能 GPU、NPU、ASIC 是算力最底层的硬件基础，决定训练和推理的速度上限。",
+          "technologyIds": ["computer-vision", "reinforcement-learning"]
+        },
+        {
+          "id": "server",
+          "name": "整机服务器",
+          "shortLabel": "服务器",
+          "description": "将芯片、内存、高速互联封装成可批量部署的服务器，强调散热、功耗和可靠性。",
+          "technologyIds": []
+        },
+        {
+          "id": "datacenter",
+          "name": "数据中心",
+          "shortLabel": "数据中心",
+          "description": "大规模服务器集群和配套电力、冷却、网络基础设施，是算力的物理载体。",
+          "technologyIds": []
+        },
+        {
+          "id": "scheduler",
+          "name": "算力调度",
+          "shortLabel": "调度",
+          "description": "跨地域、跨集群的任务调度与算力交易平台，决定算力资源能否高效利用。",
+          "technologyIds": ["world-model"]
+        },
+        {
+          "id": "ai-app",
+          "name": "AI 应用",
+          "shortLabel": "AI 应用",
+          "description": "大模型、推荐系统、自动驾驶等算力消费端，决定算力网络最终的经济价值。",
+          "technologyIds": ["llm-agent", "world-model"]
+        }
+      ],
+      "relatedPolicies": ["east-data-west-compute", "chips-act", "15fyp-proposal", "central-economic-2025"],
+      "capitalFlow": [
+        { "stage": "芯片", "amount": 78, "trend": "up", "heat": "hot" },
+        { "stage": "服务器", "amount": 55, "trend": "up", "heat": "warm" },
+        { "stage": "数据中心", "amount": 92, "trend": "up", "heat": "hot" },
+        { "stage": "调度", "amount": 18, "trend": "stable", "heat": "cool" },
+        { "stage": "AI 应用", "amount": 64, "trend": "up", "heat": "warm" }
+      ]
+    },
+    {
+      "id": "humanoid-robot",
+      "name": "人形机器人",
+      "tagline": "从零部件到整机的国产化突破",
+      "description": "模仿人类形态和运动能力的通用机器人，被视为具身智能落地的终极形态，2025 年起正进入工厂、门店、家庭的小规模试用阶段。",
+      "nationalPlanRef": "工信部人形机器人指导意见 / 十五五战略新兴产业",
+      "chainStages": [
+        {
+          "id": "reducer",
+          "name": "精密减速器",
+          "shortLabel": "减速器",
+          "description": "谐波减速器、RV 减速器是机器人关节的核心传动件，长期由日本厂商主导，国产替代正在加速。",
+          "technologyIds": ["joint-control"]
+        },
+        {
+          "id": "servo",
+          "name": "伺服电机",
+          "shortLabel": "伺服电机",
+          "description": "决定关节的力量和精度，头部厂商已能把电机+减速器+编码器做成一体化关节模组。",
+          "technologyIds": ["servo-motor"]
+        },
+        {
+          "id": "sensor",
+          "name": "传感器",
+          "shortLabel": "传感器",
+          "description": "视觉、力觉、触觉、IMU 等多模态传感器是机器人感知世界的'五官'。",
+          "technologyIds": ["computer-vision", "force-sensor", "tactile-skin"]
+        },
+        {
+          "id": "controller",
+          "name": "控制器/大脑",
+          "shortLabel": "控制器",
+          "description": "端侧算力模组+具身大模型，把感知信息转化为运动指令，是人形机器人的'大脑'。",
+          "technologyIds": ["llm-agent", "reinforcement-learning", "world-model"]
+        },
+        {
+          "id": "whole-machine",
+          "name": "整机与场景",
+          "shortLabel": "整机",
+          "description": "从本体组装到在工厂、服务、家庭场景中的商用试点，决定整个产业链的兑现速度。",
+          "technologyIds": ["path-planning", "joint-control"]
+        }
+      ],
+      "relatedPolicies": ["humanoid-robot-guidance", "most-embodied-ai", "new-industrialization", "15fyp-proposal", "central-economic-2025"],
+      "capitalFlow": [
+        { "stage": "减速器", "amount": 22, "trend": "up", "heat": "warm" },
+        { "stage": "伺服电机", "amount": 34, "trend": "up", "heat": "warm" },
+        { "stage": "传感器", "amount": 15, "trend": "up", "heat": "cool" },
+        { "stage": "控制器", "amount": 48, "trend": "up", "heat": "hot" },
+        { "stage": "整机", "amount": 71, "trend": "up", "heat": "hot" }
+      ]
+    },
+    {
+      "id": "bio-medicine",
+      "name": "生物医药",
+      "tagline": "从基因编辑到创新药上市的完整链条",
+      "description": "基因编辑、mRNA、细胞治疗、AI 药物发现等新技术，正在重塑从早期研究、临床试验到商业化生产的整个创新药产业链。",
+      "nationalPlanRef": "十五五生物制造 / 上海先进疗法清单",
+      "chainStages": [
+        {
+          "id": "gene-editing",
+          "name": "基因编辑",
+          "shortLabel": "基因编辑",
+          "description": "CRISPR、碱基编辑等工具让研究者可以在基因组水平上精准操作，是新一代疗法的上游技术底座。",
+          "technologyIds": []
+        },
+        {
+          "id": "delivery",
+          "name": "药物递送",
+          "shortLabel": "递送",
+          "description": "脂质纳米颗粒、AAV 载体决定药物能否精准、安全地进入目标细胞，是创新疗法成败的关键。",
+          "technologyIds": []
+        },
+        {
+          "id": "clinical",
+          "name": "临床试验",
+          "shortLabel": "临床",
+          "description": "多中心、多期临床试验耗时长、成本高，是创新药走向市场前最昂贵的阶段。",
+          "technologyIds": []
+        },
+        {
+          "id": "manufacturing",
+          "name": "生产制造",
+          "shortLabel": "生产",
+          "description": "GMP 级别的生物工艺与连续制造，决定新疗法能否规模化、稳定供应。",
+          "technologyIds": []
+        },
+        {
+          "id": "commercial",
+          "name": "商业化上市",
+          "shortLabel": "上市",
+          "description": "从医保准入、支付方式创新到国际化授权，最终决定创新药的市场空间。",
+          "technologyIds": []
+        }
+      ],
+      "relatedPolicies": ["14fyp-outline", "15fyp-proposal", "central-economic-2025"],
+      "capitalFlow": [
+        { "stage": "基因编辑", "amount": 20, "trend": "stable", "heat": "warm" },
+        { "stage": "递送", "amount": 12, "trend": "stable", "heat": "cool" },
+        { "stage": "临床", "amount": 58, "trend": "up", "heat": "hot" },
+        { "stage": "生产", "amount": 26, "trend": "up", "heat": "warm" },
+        { "stage": "上市", "amount": 44, "trend": "up", "heat": "warm" }
+      ]
+    }
+  ]
+}

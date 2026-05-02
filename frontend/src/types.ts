@@ -32,3 +32,46 @@ export interface TechnologyData {
 }
 
 export type ModuleType = 'explorer' | 'policy' | 'industry' | 'market';
+
+export type PolicyDepartment = 'MoST' | 'MIIT' | 'NDRC' | 'International';
+
+export interface Policy {
+  id: string;
+  title: string;
+  country: string;
+  department: PolicyDepartment;
+  departmentLabel: string;
+  level: 'national' | 'ministerial' | 'local';
+  date: string;
+  summary: string;
+  fullTextUrl: string;
+  relatedTechnologies: string[];
+  relatedIndustries: string[];
+  marketReactionDays?: number;
+}
+
+export interface IndustryChainStage {
+  id: string;
+  name: string;
+  shortLabel: string;
+  description: string;
+  technologyIds: string[];
+}
+
+export interface CapitalFlowPoint {
+  stage: string;
+  amount: number;
+  trend: 'up' | 'down' | 'stable';
+  heat: 'hot' | 'warm' | 'cool';
+}
+
+export interface Industry {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  nationalPlanRef: string;
+  chainStages: IndustryChainStage[];
+  relatedPolicies: string[];
+  capitalFlow: CapitalFlowPoint[];
+}

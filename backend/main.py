@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers.tech import router as tech_router
+from routers.policy import router as policy_router
+from routers.industry import router as industry_router
 
 app = FastAPI(title="TechPolicy Dashboard API")
 
@@ -19,3 +21,5 @@ def health():
 
 
 app.include_router(tech_router, prefix="/api")
+app.include_router(policy_router, prefix="/api")
+app.include_router(industry_router, prefix="/api")

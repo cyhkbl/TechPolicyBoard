@@ -3,24 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Cpu, 
-  FileText, 
-  Factory, 
-  TrendingUp, 
-  MessageSquare,
-  ChevronRight,
-  Menu,
-  Box,
-  Brain,
-  Zap,
-  Microscope
-} from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { ModuleType, TechnologyType } from './types';
 import { cn } from './lib/utils';
 import TechExplorer from './components/TechExplorer';
+import PolicyTracker from './components/PolicyTracker';
+import IndustryChain from './components/IndustryChain';
+import MarketTrends from './components/MarketTrends';
 
 const MODULES: { id: ModuleType; name: string; number: string }[] = [
   { id: 'explorer', name: '技术介绍', number: '01' },
@@ -39,6 +30,22 @@ const TECHNOLOGIES: { id: TechnologyType; name: string; label: string }[] = [
 export default function App() {
   const [activeModule, setActiveModule] = useState<ModuleType>('explorer');
   const [activeTech, setActiveTech] = useState<TechnologyType>('embodied-ai');
+  const [focusIndustryId, setFocusIndustryId] = useState<string | null>(null);
+  const [focusPolicyId, setFocusPolicyId] = useState<string | null>(null);
+
+  const navigateToTech = useCallback(() => {
+    setActiveModule('explorer');
+  }, []);
+
+  const navigateToIndustry = useCallback((industryId: string) => {
+    setFocusIndustryId(industryId);
+    setActiveModule('industry');
+  }, []);
+
+  const navigateToPolicy = useCallback((policyId: string) => {
+    setFocusPolicyId(policyId);
+    setActiveModule('policy');
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-full bg-high-bg text-high-text font-sans overflow-hidden select-none">
@@ -95,21 +102,23 @@ export default function App() {
             transition={{ duration: 0.2 }}
             className="flex-1 overflow-hidden"
           >
-            {activeModule === 'explorer' ? (
-              <TechExplorer techId={activeTech} />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="text-[10px] font-mono uppercase opacity-30 mb-2">Module_Under_Construction</div>
-                  <h2 className="text-4xl font-serif italic mb-4">
-                    {MODULES.find(m => m.id === activeModule)?.name}
-                  </h2>
-                  <p className="text-xs uppercase tracking-widest opacity-50">
-                    Exploring {TECHNOLOGIES.find(t => t.id === activeTech)?.name}
-                  </p>
-                </div>
-              </div>
+            {activeModule === 'explorer' && <TechExplorer techId={activeTech} />}
+            {activeModule === 'policy' && (
+              <PolicyTracker
+                currentTech={activeTech}
+                focusPolicyId={focusPolicyId}
+                onNavigateToTech={navigateToTech}
+                onNavigateToIndustry={navigateToIndustry}
+              />
             )}
+            {activeModule === 'industry' && (
+              <IndustryChain
+                focusIndustryId={focusIndustryId}
+                onNavigateToTech={navigateToTech}
+                onNavigateToPolicy={navigateToPolicy}
+              />
+            )}
+            {activeModule === 'market' && <MarketTrends />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -121,9 +130,9 @@ export default function App() {
           {[
             "具身智能对劳动力市场的影响？",
             "对比国内外伺服电机厂商差异",
-            "解释“端到端算法”的技术难点"
+            "解释'端到端算法'的技术难点"
           ].map((q, i) => (
-            <button 
+            <button
               key={i}
               onClick={() => alert(`分析建议: 关于 "${q}" 的数据正在抓取中...`)}
               className="px-3 py-1 bg-white border border-high-text text-[10px] rounded-full hover:bg-high-text hover:text-white whitespace-nowrap transition-colors"
@@ -132,12 +141,12 @@ export default function App() {
             </button>
           ))}
         </div>
-        
+
         <div className="flex-1 flex gap-4">
           <div className="w-12 h-12 bg-high-text text-high-bg flex items-center justify-center font-serif italic text-xl shrink-0">
             A
           </div>
-          <form 
+          <form
             className="flex-1 relative"
             onSubmit={(e) => {
               e.preventDefault();
@@ -148,8 +157,8 @@ export default function App() {
               }
             }}
           >
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder={`向 Agent 提问，探索 ${TECHNOLOGIES.find(t => t.id === activeTech)?.name} 的更深层细节...`}
               className="w-full h-12 border border-high-text bg-high-bg px-4 text-sm placeholder-high-text/30 focus:outline-none focus:ring-1 focus:ring-high-text"
             />

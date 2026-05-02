@@ -1,4 +1,12 @@
-import { TechnologyData } from './types';
+import { Industry, Policy, PolicyDepartment, TechnologyData } from './types';
+
+export const DEPT_COLORS: Record<PolicyDepartment, { fill: string; label: string; twBg: string; twText: string }> = {
+  MoST: { fill: '#2563eb', label: '科技部', twBg: 'bg-blue-600', twText: 'text-blue-700' },
+  MIIT: { fill: '#059669', label: '工信部', twBg: 'bg-emerald-600', twText: 'text-emerald-700' },
+  NDRC: { fill: '#f97316', label: '发改委', twBg: 'bg-orange-500', twText: 'text-orange-600' },
+  International: { fill: '#6b7280', label: '国际', twBg: 'bg-gray-500', twText: 'text-gray-600' },
+};
+
 
 export const TECH_DATA: Record<string, TechnologyData> = {
   'embodied-ai': {
@@ -211,3 +219,322 @@ export const TECH_DATA: Record<string, TechnologyData> = {
     ],
   },
 };
+
+export const POLICY_DATA: Policy[] = [
+  {
+    id: '14fyp-outline',
+    title: '十四五规划纲要（数字经济与科技自立自强）',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2021-03',
+    summary: '将科技自立自强列为国家战略支撑，首次把数字经济写入国家五年规划，明确人工智能、量子信息、生物技术等前沿领域布局。',
+    fullTextUrl: 'https://www.ndrc.gov.cn/xxgk/jd/jd/202103/t20210323_1270117.html',
+    relatedTechnologies: ['computer-vision', 'reinforcement-learning', 'world-model'],
+    relatedIndustries: ['compute-grid', 'humanoid-robot', 'bio-medicine'],
+    marketReactionDays: 14,
+  },
+  {
+    id: 'east-data-west-compute',
+    title: '东数西算工程全面启动',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2022-02',
+    summary: '八大枢纽、十大集群全面启动，东部数据算力需求导向西部，形成全国一体化算力网络，为 AI 训练、云服务奠定底层基础设施。',
+    fullTextUrl: 'https://www.ndrc.gov.cn/xxgk/zcfb/tz/202202/t20220217_1315309.html',
+    relatedTechnologies: ['reinforcement-learning', 'world-model'],
+    relatedIndustries: ['compute-grid'],
+    marketReactionDays: 5,
+  },
+  {
+    id: 'chips-act',
+    title: '美国《芯片与科学法案》（CHIPS Act）',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2022-08',
+    summary: '美国联邦拨款 520 亿美元支持本土半导体制造与研发，并对先进制程设备出口实施更严格的管制，深刻影响全球算力产业链格局。',
+    fullTextUrl: 'https://www.congress.gov/bill/117th-congress/house-bill/4346',
+    relatedTechnologies: ['computer-vision', 'reinforcement-learning'],
+    relatedIndustries: ['compute-grid', 'humanoid-robot'],
+    marketReactionDays: 3,
+  },
+  {
+    id: 'humanoid-robot-guidance',
+    title: '工信部《人形机器人创新发展指导意见》',
+    country: '中国',
+    department: 'MIIT',
+    departmentLabel: '工信部',
+    level: 'ministerial',
+    date: '2023-10',
+    summary: '首次把人形机器人列为颠覆性产品，明确 2025 年初步建立创新体系、2027 年进入全球第一梯队，重点突破大脑、小脑、肢体等关键部件。',
+    fullTextUrl: 'https://www.miit.gov.cn/',
+    relatedTechnologies: ['joint-control', 'servo-motor', 'computer-vision', 'reinforcement-learning'],
+    relatedIndustries: ['humanoid-robot'],
+    marketReactionDays: 7,
+  },
+  {
+    id: 'us-ai-eo',
+    title: '美国《关于安全、可靠、可信人工智能的行政令》',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2023-10',
+    summary: '拜登政府针对前沿大模型设立算力阈值报告义务，要求大模型训练方向政府披露安全测试，成为全球 AI 监管的重要参照。',
+    fullTextUrl: 'https://www.whitehouse.gov/briefing-room/presidential-actions/2023/10/30/executive-order-on-the-safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence/',
+    relatedTechnologies: ['llm-agent', 'world-model'],
+    relatedIndustries: ['compute-grid'],
+    marketReactionDays: 1,
+  },
+  {
+    id: 'new-industrialization',
+    title: '工信部《推进新型工业化部署》',
+    country: '中国',
+    department: 'MIIT',
+    departmentLabel: '工信部',
+    level: 'ministerial',
+    date: '2024-03',
+    summary: '把智能制造、工业母机、工业软件与人形机器人并列为新型工业化的主攻方向，强调产业链补短板、锻长板，打造一批智能工厂与先进产业集群。',
+    fullTextUrl: 'https://www.miit.gov.cn/',
+    relatedTechnologies: ['servo-motor', 'joint-control', 'path-planning'],
+    relatedIndustries: ['humanoid-robot', 'compute-grid'],
+    marketReactionDays: 10,
+  },
+  {
+    id: 'most-embodied-ai',
+    title: '科技部《具身智能重点研发专项》',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2024-07',
+    summary: '面向具身智能设立国家重点研发计划专项，聚焦多模态大模型、世界模型、仿真到真机迁移等基础科学问题，支持高校与国家实验室联合攻关。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['llm-agent', 'reinforcement-learning', 'world-model', 'computer-vision'],
+    relatedIndustries: ['humanoid-robot'],
+    marketReactionDays: 20,
+  },
+  {
+    id: 'most-quantum',
+    title: '科技部《量子科技研发专项》',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2024-11',
+    summary: '加码量子计算、量子通信、量子测量三条技术路线的基础科研投入，组建国家实验室群落，明确 2030 年实现若干关键节点性突破。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['world-model'],
+    relatedIndustries: ['compute-grid'],
+    marketReactionDays: 30,
+  },
+  {
+    id: '15fyp-proposal',
+    title: '十五五规划建议（二十届四中全会）',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2025-10',
+    summary: '明确把具身智能、量子科技、商业航天、生物制造列为战略性新兴产业重点培育方向，提出建设统一算力网、健全新型举国体制。',
+    fullTextUrl: 'https://www.gov.cn/',
+    relatedTechnologies: ['llm-agent', 'reinforcement-learning', 'world-model', 'joint-control'],
+    relatedIndustries: ['compute-grid', 'humanoid-robot', 'bio-medicine'],
+    marketReactionDays: 2,
+  },
+  {
+    id: 'central-economic-2025',
+    title: '2025 年中央经济工作会议',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2025-12',
+    summary: '把发展新质生产力列为 2026 年重点任务，明确要以科技创新推动产业创新，强调 AI+、低空经济、具身智能、生物制造的标志性应用落地。',
+    fullTextUrl: 'https://www.gov.cn/',
+    relatedTechnologies: ['llm-agent', 'joint-control', 'reinforcement-learning'],
+    relatedIndustries: ['humanoid-robot', 'bio-medicine', 'compute-grid'],
+    marketReactionDays: 1,
+  },
+];
+
+export const INDUSTRY_DATA: Industry[] = [
+  {
+    id: 'compute-grid',
+    name: '算力网',
+    tagline: '全国一体化算力网络，AI 时代的电网',
+    description: '把分散在东西部的数据中心、超算、智算中心通过高速网络互联，按任务自动调度算力资源，让训练大模型像用电一样方便。',
+    nationalPlanRef: '十五五数字基础设施 / 东数西算',
+    chainStages: [
+      {
+        id: 'gpu-chip',
+        name: 'GPU / 加速芯片',
+        shortLabel: '芯片',
+        description: '高性能 GPU、NPU、ASIC 是算力最底层的硬件基础，决定训练和推理的速度上限。',
+        technologyIds: ['computer-vision', 'reinforcement-learning'],
+      },
+      {
+        id: 'server',
+        name: '整机服务器',
+        shortLabel: '服务器',
+        description: '将芯片、内存、高速互联封装成可批量部署的服务器，强调散热、功耗和可靠性。',
+        technologyIds: [],
+      },
+      {
+        id: 'datacenter',
+        name: '数据中心',
+        shortLabel: '数据中心',
+        description: '大规模服务器集群和配套电力、冷却、网络基础设施，是算力的物理载体。',
+        technologyIds: [],
+      },
+      {
+        id: 'scheduler',
+        name: '算力调度',
+        shortLabel: '调度',
+        description: '跨地域、跨集群的任务调度与算力交易平台，决定算力资源能否高效利用。',
+        technologyIds: ['world-model'],
+      },
+      {
+        id: 'ai-app',
+        name: 'AI 应用',
+        shortLabel: 'AI 应用',
+        description: '大模型、推荐系统、自动驾驶等算力消费端，决定算力网络最终的经济价值。',
+        technologyIds: ['llm-agent', 'world-model'],
+      },
+    ],
+    relatedPolicies: ['east-data-west-compute', 'chips-act', '15fyp-proposal', 'central-economic-2025'],
+    capitalFlow: [
+      { stage: '芯片', amount: 78, trend: 'up', heat: 'hot' },
+      { stage: '服务器', amount: 55, trend: 'up', heat: 'warm' },
+      { stage: '数据中心', amount: 92, trend: 'up', heat: 'hot' },
+      { stage: '调度', amount: 18, trend: 'stable', heat: 'cool' },
+      { stage: 'AI 应用', amount: 64, trend: 'up', heat: 'warm' },
+    ],
+  },
+  {
+    id: 'humanoid-robot',
+    name: '人形机器人',
+    tagline: '从零部件到整机的国产化突破',
+    description: '模仿人类形态和运动能力的通用机器人，被视为具身智能落地的终极形态，2025 年起正进入工厂、门店、家庭的小规模试用阶段。',
+    nationalPlanRef: '工信部人形机器人指导意见 / 十五五战略新兴产业',
+    chainStages: [
+      {
+        id: 'reducer',
+        name: '精密减速器',
+        shortLabel: '减速器',
+        description: '谐波减速器、RV 减速器是机器人关节的核心传动件，长期由日本厂商主导，国产替代正在加速。',
+        technologyIds: ['joint-control'],
+      },
+      {
+        id: 'servo',
+        name: '伺服电机',
+        shortLabel: '伺服电机',
+        description: '决定关节的力量和精度，头部厂商已能把电机+减速器+编码器做成一体化关节模组。',
+        technologyIds: ['servo-motor'],
+      },
+      {
+        id: 'sensor',
+        name: '传感器',
+        shortLabel: '传感器',
+        description: '视觉、力觉、触觉、IMU 等多模态传感器是机器人感知世界的"五官"。',
+        technologyIds: ['computer-vision', 'force-sensor', 'tactile-skin'],
+      },
+      {
+        id: 'controller',
+        name: '控制器/大脑',
+        shortLabel: '控制器',
+        description: '端侧算力模组+具身大模型，把感知信息转化为运动指令，是人形机器人的"大脑"。',
+        technologyIds: ['llm-agent', 'reinforcement-learning', 'world-model'],
+      },
+      {
+        id: 'whole-machine',
+        name: '整机与场景',
+        shortLabel: '整机',
+        description: '从本体组装到在工厂、服务、家庭场景中的商用试点，决定整个产业链的兑现速度。',
+        technologyIds: ['path-planning', 'joint-control'],
+      },
+    ],
+    relatedPolicies: ['humanoid-robot-guidance', 'most-embodied-ai', 'new-industrialization', '15fyp-proposal', 'central-economic-2025'],
+    capitalFlow: [
+      { stage: '减速器', amount: 22, trend: 'up', heat: 'warm' },
+      { stage: '伺服电机', amount: 34, trend: 'up', heat: 'warm' },
+      { stage: '传感器', amount: 15, trend: 'up', heat: 'cool' },
+      { stage: '控制器', amount: 48, trend: 'up', heat: 'hot' },
+      { stage: '整机', amount: 71, trend: 'up', heat: 'hot' },
+    ],
+  },
+  {
+    id: 'bio-medicine',
+    name: '生物医药',
+    tagline: '从基因编辑到创新药上市的完整链条',
+    description: '基因编辑、mRNA、细胞治疗、AI 药物发现等新技术，正在重塑从早期研究、临床试验到商业化生产的整个创新药产业链。',
+    nationalPlanRef: '十五五生物制造 / 上海先进疗法清单',
+    chainStages: [
+      {
+        id: 'gene-editing',
+        name: '基因编辑',
+        shortLabel: '基因编辑',
+        description: 'CRISPR、碱基编辑等工具让研究者可以在基因组水平上精准操作，是新一代疗法的上游技术底座。',
+        technologyIds: [],
+      },
+      {
+        id: 'delivery',
+        name: '药物递送',
+        shortLabel: '递送',
+        description: '脂质纳米颗粒、AAV 载体决定药物能否精准、安全地进入目标细胞，是创新疗法成败的关键。',
+        technologyIds: [],
+      },
+      {
+        id: 'clinical',
+        name: '临床试验',
+        shortLabel: '临床',
+        description: '多中心、多期临床试验耗时长、成本高，是创新药走向市场前最昂贵的阶段。',
+        technologyIds: [],
+      },
+      {
+        id: 'manufacturing',
+        name: '生产制造',
+        shortLabel: '生产',
+        description: 'GMP 级别的生物工艺与连续制造，决定新疗法能否规模化、稳定供应。',
+        technologyIds: [],
+      },
+      {
+        id: 'commercial',
+        name: '商业化上市',
+        shortLabel: '上市',
+        description: '从医保准入、支付方式创新到国际化授权，最终决定创新药的市场空间。',
+        technologyIds: [],
+      },
+    ],
+    relatedPolicies: ['14fyp-outline', '15fyp-proposal', 'central-economic-2025'],
+    capitalFlow: [
+      { stage: '基因编辑', amount: 20, trend: 'stable', heat: 'warm' },
+      { stage: '递送', amount: 12, trend: 'stable', heat: 'cool' },
+      { stage: '临床', amount: 58, trend: 'up', heat: 'hot' },
+      { stage: '生产', amount: 26, trend: 'up', heat: 'warm' },
+      { stage: '上市', amount: 44, trend: 'up', heat: 'warm' },
+    ],
+  },
+];
+
+export const POLICY_BY_ID: Record<string, Policy> = POLICY_DATA.reduce((acc, p) => {
+  acc[p.id] = p;
+  return acc;
+}, {} as Record<string, Policy>);
+
+export const INDUSTRY_BY_ID: Record<string, Industry> = INDUSTRY_DATA.reduce((acc, i) => {
+  acc[i.id] = i;
+  return acc;
+}, {} as Record<string, Industry>);
+
+export const ALL_SUB_TECHS: { id: string; name: string; categoryId: string; categoryName: string }[] = Object.values(TECH_DATA).flatMap(t =>
+  t.categories.flatMap(cat =>
+    cat.subComponents.map(sub => ({ id: sub.id, name: sub.name, categoryId: cat.id, categoryName: cat.name })),
+  ),
+);
+
