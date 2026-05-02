@@ -9,36 +9,40 @@ import { TechIllustration, getTechBg } from './TechIllustration';
 type HotspotCfg = { x: number; y: number; accent: string; label: string; burstAngles: number[] };
 
 // Hotspot configs keyed by techId → categoryId
+// Coordinates are % of the (square) image — see getAspectRatio below.
 const HOTSPOT_CONFIGS: Record<string, Record<string, HotspotCfg>> = {
   'embodied-ai': {
-    cognition:   { x: 50, y: 11, accent: '#a78bfa', label: '决策智能', burstAngles: [145, 168, 30] },
-    perception:  { x: 50, y: 36, accent: '#38bdf8', label: '感知系统', burstAngles: [155, 180, 205] },
-    motion:      { x: 50, y: 70, accent: '#fb923c', label: '运动控制', burstAngles: [-25, 25, 205] },
-    intelligence:{ x: 50, y: 11, accent: '#a78bfa', label: '决策智能', burstAngles: [145, 168, 30] },
+    // Robot: head top, chest middle, legs bottom
+    cognition:   { x: 50, y: 13, accent: '#a78bfa', label: '决策智能', burstAngles: [120, 60, 0] },
+    perception:  { x: 50, y: 22, accent: '#38bdf8', label: '感知系统', burstAngles: [155, 180, 25] },
+    motion:      { x: 50, y: 78, accent: '#fb923c', label: '运动控制', burstAngles: [-150, -30, 180] },
+    intelligence:{ x: 50, y: 13, accent: '#a78bfa', label: '决策智能', burstAngles: [120, 60, 0] },
   },
   'bci': {
-    // brain image (1080×809 landscape): brain=center, electrodes=top, decode=bottom-left
-    perception:  { x: 50, y: 42, accent: '#38bdf8', label: '感知系统', burstAngles: [155, 180, 205] },
-    motion:      { x: 47, y: 22, accent: '#fb923c', label: '运动控制', burstAngles: [20, -20, 160] },
-    cognition:   { x: 22, y: 76, accent: '#a78bfa', label: '决策智能', burstAngles: [-20, 30, 80] },
-    intelligence:{ x: 22, y: 76, accent: '#a78bfa', label: '决策智能', burstAngles: [-20, 30, 80] },
+    // Chip on left, brain in middle, signal waves on right
+    cognition:   { x: 14, y: 50, accent: '#a78bfa', label: '决策智能', burstAngles: [-30, 0, 30] },
+    perception:  { x: 50, y: 50, accent: '#38bdf8', label: '感知系统', burstAngles: [-90, 90, 180] },
+    motion:      { x: 84, y: 50, accent: '#fb923c', label: '运动控制', burstAngles: [150, 180, 210] },
+    intelligence:{ x: 14, y: 50, accent: '#a78bfa', label: '决策智能', burstAngles: [-30, 0, 30] },
   },
   'quantum': {
-    perception:  { x: 50, y: 40, accent: '#38bdf8', label: '感知系统', burstAngles: [155, 180, 25] },
-    motion:      { x: 50, y: 22, accent: '#fb923c', label: '运动控制', burstAngles: [145, 168, 30] },
-    cognition:   { x: 50, y: 72, accent: '#a78bfa', label: '决策智能', burstAngles: [155, 180, 25] },
-    intelligence:{ x: 50, y: 72, accent: '#a78bfa', label: '决策智能', burstAngles: [155, 180, 25] },
+    // Cooling unit left, gold dilution-refrigerator center, control rack right
+    perception:  { x: 42, y: 40, accent: '#38bdf8', label: '感知系统', burstAngles: [180, 200, 160] },
+    motion:      { x: 14, y: 72, accent: '#fb923c', label: '运动控制', burstAngles: [-30, 0, 30] },
+    cognition:   { x: 80, y: 50, accent: '#a78bfa', label: '决策智能', burstAngles: [150, 180, 210] },
+    intelligence:{ x: 80, y: 50, accent: '#a78bfa', label: '决策智能', burstAngles: [150, 180, 210] },
   },
   'fusion': {
-    perception:  { x: 50, y: 40, accent: '#38bdf8', label: '感知系统', burstAngles: [155, 180, 25] },
-    motion:      { x: 50, y: 22, accent: '#fb923c', label: '运动控制', burstAngles: [145, 168, 30] },
-    cognition:   { x: 50, y: 72, accent: '#a78bfa', label: '决策智能', burstAngles: [155, 180, 25] },
-    intelligence:{ x: 50, y: 72, accent: '#a78bfa', label: '决策智能', burstAngles: [155, 180, 25] },
+    // Tokamak: plasma center, magnetic coils outer ring, base bottom
+    perception:  { x: 50, y: 45, accent: '#38bdf8', label: '感知系统', burstAngles: [155, 180, 25] },
+    motion:      { x: 22, y: 30, accent: '#fb923c', label: '运动控制', burstAngles: [-30, 30, 90] },
+    cognition:   { x: 50, y: 85, accent: '#a78bfa', label: '决策智能', burstAngles: [-150, -30, -90] },
+    intelligence:{ x: 50, y: 85, accent: '#a78bfa', label: '决策智能', burstAngles: [-150, -30, -90] },
   },
 };
 
 function getAspectRatio(_techId: string) {
-  return '0.72';
+  return '1';
 }
 
 const BURST_RADIUS = 130; // px
