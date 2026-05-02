@@ -155,6 +155,162 @@
         { "stage": "生产", "amount": 26, "trend": "up", "heat": "warm" },
         { "stage": "上市", "amount": 44, "trend": "up", "heat": "warm" }
       ]
+    },
+    {
+      "id": "neural-prosthetics",
+      "name": "神经假肢 / BCI 医疗",
+      "tagline": "从植入电极到康复临床的脑机接口全链条",
+      "description": "把高精度电极、神经信号处理芯片、解码算法和外部执行设备组合成一体，帮助瘫痪、失语、渐冻症等患者重获运动或沟通能力。",
+      "nationalPlanRef": "十四五脑科学专项 / 工信部 BCI 产业标准",
+      "chainStages": [
+        {
+          "id": "bci-electrode",
+          "name": "植入/柔性电极",
+          "shortLabel": "电极",
+          "description": "微米级柔性电极阵列是脑机接口最上游的核心部件，直接决定信号质量与长期稳定性，国产替代空间大。",
+          "technologyIds": ["bci-implant", "bci-eeg-cap"]
+        },
+        {
+          "id": "bci-acquisition-chip",
+          "name": "信号采集芯片",
+          "shortLabel": "采集芯片",
+          "description": "低噪声模拟前端+AD 转换+无线传输的专用 SoC，决定多通道并发采样能力和可植入设备的功耗寿命。",
+          "technologyIds": ["bci-eeg-cap", "bci-fnirs"]
+        },
+        {
+          "id": "bci-decoder-sw",
+          "name": "解码算法/软件",
+          "shortLabel": "解码软件",
+          "description": "运行在外部计算单元或嵌入式设备上的神经解码与控制软件，覆盖运动意图、光标控制、语音合成等场景。",
+          "technologyIds": ["bci-dl-decoder", "bci-motor-intent", "bci-speech-decode"]
+        },
+        {
+          "id": "bci-device",
+          "name": "外部设备/假肢",
+          "shortLabel": "外设",
+          "description": "机械臂、轮椅、电脑、语音合成器等受控终端，以及康复训练所需的外骨骼、VR 设备等。",
+          "technologyIds": ["bci-tms", "bci-closed-loop"]
+        },
+        {
+          "id": "bci-clinical",
+          "name": "医院与康复应用",
+          "shortLabel": "临床应用",
+          "description": "神经外科、康复医学、精神科等临床科室的落地场景，决定 BCI 的医保支付、合规路径与商业规模。",
+          "technologyIds": ["bci-tms"]
+        }
+      ],
+      "relatedPolicies": ["brain-14fyp", "most-bci-2023", "us-brain-init-2-0", "miit-bci-standard-2024"],
+      "capitalFlow": [
+        { "stage": "电极", "amount": 14, "trend": "up", "heat": "warm" },
+        { "stage": "采集芯片", "amount": 9, "trend": "up", "heat": "cool" },
+        { "stage": "解码软件", "amount": 21, "trend": "up", "heat": "hot" },
+        { "stage": "外设", "amount": 18, "trend": "up", "heat": "warm" },
+        { "stage": "临床应用", "amount": 32, "trend": "up", "heat": "hot" }
+      ]
+    },
+    {
+      "id": "quantum-computing-industry",
+      "name": "量子计算产业链",
+      "tagline": "从量子比特到云上量子算力的完整栈",
+      "description": "把不同物理体系的量子比特、制冷/控制电子、软件工具链、云平台和行业算法整合到一起，形成一条从基础器件到行业应用的新兴产业链。",
+      "nationalPlanRef": "十四五量子信息专项 / 十五五战略新兴产业",
+      "chainStages": [
+        {
+          "id": "q-device",
+          "name": "量子比特器件",
+          "shortLabel": "量子比特",
+          "description": "超导、离子阱、光量子等物理体系的核心器件，是量子计算产业的'芯片层'。",
+          "technologyIds": ["q-superconducting", "q-ion-trap", "q-photonic"]
+        },
+        {
+          "id": "q-cryogenic",
+          "name": "制冷与控制系统",
+          "shortLabel": "制冷/控制",
+          "description": "稀释制冷机、微波/激光控制电子、真空腔等支撑系统，决定量子计算机能否稳定运行。",
+          "technologyIds": ["q-superconducting", "q-ion-trap"]
+        },
+        {
+          "id": "q-software",
+          "name": "量子软件/算法",
+          "shortLabel": "软件/算法",
+          "description": "量子算法库、编译器、纠错码等软件层，让开发者不必理解所有底层物理就能使用量子计算。",
+          "technologyIds": ["q-algorithm", "q-error-correction", "q-programming"]
+        },
+        {
+          "id": "q-cloud",
+          "name": "量子云平台",
+          "shortLabel": "云平台",
+          "description": "通过 SaaS 把量子计算机开放给企业与研究者，让量子算力像 GPU 算力一样按需调用。",
+          "technologyIds": ["q-programming", "q-simulation"]
+        },
+        {
+          "id": "q-application",
+          "name": "行业应用",
+          "shortLabel": "行业应用",
+          "description": "金融优化、新材料、生物制药、量子加密通信等落地场景，决定量子计算的经济价值。",
+          "technologyIds": ["q-simulation", "q-optimization", "q-crypto"]
+        }
+      ],
+      "relatedPolicies": ["most-quantum", "quantum-14fyp", "us-nqi-reauth-2024", "eu-quantum-chips-act", "15fyp-proposal"],
+      "capitalFlow": [
+        { "stage": "量子比特", "amount": 38, "trend": "up", "heat": "hot" },
+        { "stage": "制冷/控制", "amount": 16, "trend": "up", "heat": "warm" },
+        { "stage": "软件/算法", "amount": 22, "trend": "up", "heat": "warm" },
+        { "stage": "云平台", "amount": 19, "trend": "up", "heat": "warm" },
+        { "stage": "行业应用", "amount": 11, "trend": "stable", "heat": "cool" }
+      ]
+    },
+    {
+      "id": "fusion-energy",
+      "name": "聚变能源产业链",
+      "tagline": "从等离子体装置到商业聚变电站的长期工程",
+      "description": "以托卡马克、仿星器、惯性约束为主的聚变装置，加上高温超导磁体、特种材料、氚供应与能量转换系统，共同构成未来清洁能源的产业链骨架。",
+      "nationalPlanRef": "十五五能源规划 / 国际 ITER 合作",
+      "chainStages": [
+        {
+          "id": "f-device",
+          "name": "等离子体装置",
+          "shortLabel": "装置",
+          "description": "托卡马克、仿星器、激光驱动惯性约束装置是聚变堆的'发动机'，决定整个系统的能量增益水平。",
+          "technologyIds": ["f-tokamak", "f-stellarator", "f-inertial"]
+        },
+        {
+          "id": "f-magnet-industry",
+          "name": "高温超导磁体",
+          "shortLabel": "磁体",
+          "description": "REBCO 高温超导带材和磁体系统的量产能力，是紧凑型商业聚变装置能否成立的关键制约。",
+          "technologyIds": ["f-magnet"]
+        },
+        {
+          "id": "f-materials",
+          "name": "聚变堆材料",
+          "shortLabel": "堆内材料",
+          "description": "第一壁、偏滤器、包层、屏蔽层等直接面对等离子体与中子环境的材料，是目前最硬的工程瓶颈。",
+          "technologyIds": ["f-first-wall", "f-tritium", "f-neutron-shield"]
+        },
+        {
+          "id": "f-power-conversion",
+          "name": "能量转换系统",
+          "shortLabel": "能量转换",
+          "description": "把聚变反应释放的中子与带电粒子能量转化为电力的关键系统，既包括成熟蒸汽循环也包括前瞻的直接能量转换。",
+          "technologyIds": ["f-heat-capture", "f-direct-conversion"]
+        },
+        {
+          "id": "f-plant",
+          "name": "商业示范电站",
+          "shortLabel": "示范电站",
+          "description": "连接科研装置与电网的商业或准商业示范电站，是聚变从实验室走向能源市场的最后一公里。",
+          "technologyIds": ["f-tokamak", "f-heat-capture"]
+        }
+      ],
+      "relatedPolicies": ["most-fusion-2022", "iter-schedule-2024", "us-doe-bold-fusion", "15fyp-energy-fusion"],
+      "capitalFlow": [
+        { "stage": "装置", "amount": 40, "trend": "up", "heat": "hot" },
+        { "stage": "磁体", "amount": 28, "trend": "up", "heat": "warm" },
+        { "stage": "堆内材料", "amount": 14, "trend": "up", "heat": "cool" },
+        { "stage": "能量转换", "amount": 9, "trend": "stable", "heat": "cool" },
+        { "stage": "示范电站", "amount": 36, "trend": "up", "heat": "hot" }
+      ]
     }
   ]
 }
