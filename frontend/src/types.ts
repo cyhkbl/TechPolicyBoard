@@ -35,6 +35,10 @@ export type ModuleType = 'explorer' | 'policy' | 'industry' | 'market';
 
 export type PolicyDepartment = 'MoST' | 'MIIT' | 'NDRC' | 'International';
 
+export type PolicyLevel = 'supranational' | 'national' | 'ministerial' | 'local';
+
+export type InnovationStage = 'basic-research' | 'applied-rd' | 'pilot' | 'commercialization';
+
 export interface Policy {
   id: string;
   title: string;
@@ -48,6 +52,59 @@ export interface Policy {
   relatedTechnologies: string[];
   relatedIndustries: string[];
   marketReactionDays?: number;
+  iso3?: string;
+  coordinates?: { x: number; y: number };
+  innovationStage?: InnovationStage;
+  similarIds?: string[];
+  highlights?: string[];
+  keywords?: string[];
+}
+
+export interface RegionPolicyRef {
+  id: string;
+  targetTrack: string;
+  focus: string;
+}
+
+export interface RegionScenario {
+  name: string;
+  description: string;
+  technologies: string[];
+}
+
+export interface Region {
+  id: string;
+  name: string;
+  englishName: string;
+  coordinates: { x: number; y: number };
+  endowment: string;
+  policies: RegionPolicyRef[];
+  scenarios: RegionScenario[];
+}
+
+export interface FundingEvent {
+  id: string;
+  company: string;
+  round: string;
+  amount: string;
+  date: string;
+  track: string;
+  techId?: TechnologyType;
+}
+
+export type Heat = 'hot' | 'warm' | 'cold';
+
+export interface ChainItem {
+  name: string;
+  heat: Heat;
+  amount: string;
+  gap?: boolean;
+  reason?: string;
+}
+
+export interface ChainLayer {
+  layer: '上游' | '中游' | '下游';
+  items: ChainItem[];
 }
 
 export interface IndustryChainStage {

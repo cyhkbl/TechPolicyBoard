@@ -1,11 +1,19 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ExternalLink, Info, Filter } from 'lucide-react';
+import { ArrowUpRight, GitCommit } from 'lucide-react';
 import type { Policy, PolicyDepartment, TechnologyType } from '../types';
-import { POLICY_DATA, DEPT_COLORS, ALL_SUB_TECHS, INDUSTRY_BY_ID } from '../constants';
+import { POLICY_DATA, DEPT_COLORS, INNOVATION_STAGES, INDUSTRY_BY_ID, ALL_SUB_TECHS } from '../constants';
 import { cn } from '../lib/utils';
 
-type DeptFilter = 'all' | PolicyDepartment;
+type RegionFilter = 'ALL' | 'CHN' | 'USA' | 'EUU' | 'JPN' | 'KOR' | 'GBR' | 'OTH';
+type LevelFilter = 'ALL' | 'national' | 'ministerial' | 'local';
+type DomainFilter = 'ALL' | PolicyDepartment;
+
+const LEVEL_LABEL: Record<Exclude<LevelFilter, 'ALL'>, string> = {
+  national: '国家级',
+  ministerial: '部委级',
+  local: '地方级',
+};
 
 interface PolicyTrackerProps {
   onNavigateToTech?: (techId: string) => void;
@@ -14,317 +22,422 @@ interface PolicyTrackerProps {
   focusPolicyId?: string | null;
 }
 
-const TIMELINE_START = 2020;
-const TIMELINE_END = 2026;
-const LANE_ORDER: PolicyDepartment[] = ['MoST', 'MIIT', 'NDRC', 'International'];
-const LANE_Y: Record<PolicyDepartment, number> = {
-  MoST: 70,
-  MIIT: 115,
-  NDRC: 160,
-  International: 205,
-};
-
-function parseDateToYear(date: string): number {
-  const [y, m] = date.split('-').map(Number);
-  return y + ((m || 1) - 1) / 12;
-}
-
-export default function PolicyTracker({ onNavigateToTech, onNavigateToIndustry, focusPolicyId }: PolicyTrackerProps) {
-  const [deptFilter, setDeptFilter] = useState<DeptFilter>('all');
+export default function PolicyTracker({
+  onNavigateToTech,
+  onNavigateToIndustry,
+  focusPolicyId,
+}: PolicyTrackerProps) {
+  const [region, setRegion] = useState<RegionFilter>('ALL');
+  const [level, setLevel] = useState<LevelFilter>('ALL');
+  const [domain, setDomain] = useState<DomainFilter>('ALL');
   const [selected, setSelected] = useState<Policy | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!focusPolicyId) return;
     const p = POLICY_DATA.find(x => x.id === focusPolicyId);
     if (p) {
-      setDeptFilter('all');
+      setRegion('ALL');
+      setLevel('ALL');
+      setDomain('ALL');
       setSelected(p);
     }
   }, [focusPolicyId]);
 
-  const filteredPolicies = useMemo(() => {
-    if (deptFilter === 'all') return POLICY_DATA;
-    return POLICY_DATA.filter(p => p.department === deptFilter);
-  }, [deptFilter]);
+  const filtered = useMemo(() => {
+    return POLICY_DATA.filter(p =>
+      (region === 'ALL' || (p.iso3 ?? 'OTH') === region) &&
+      (level === 'ALL' || p.level === level) &&
+      (domain === 'ALL' || p.department === domain),
+    );
+  }, [region, level, domain]);
 
   useEffect(() => {
-    if (!selected) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelected(null);
+    let raf = 0;
+    let pos = 0;
+    const el = scrollRef.current;
+    const tick = () => {
+      if (!el || el.matches(':hover') || filtered.length < 4 || selected) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      pos += 0.25;
+      if (pos >= el.scrollHeight / 2) pos = 0;
+      el.scrollTop = pos;
+      raf = requestAnimationFrame(tick);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [filtered, selected]);
+
+  const similar = useMemo(() => {
+    if (!selected) return [] as Policy[];
+    // Use explicit similarIds if available, else derive from shared relatedTechnologies.
+    if (selected.similarIds?.length) {
+      return selected.similarIds
+        .map(id => POLICY_DATA.find(p => p.id === id))
+        .filter((p): p is Policy => Boolean(p));
+    }
+    const techSet = new Set(selected.relatedTechnologies);
+    return POLICY_DATA.filter(p =>
+      p.id !== selected.id && p.relatedTechnologies.some(t => techSet.has(t)),
+    ).slice(0, 5);
   }, [selected]);
 
-  const yearTicks = useMemo(() => {
-    const ticks: number[] = [];
-    for (let y = TIMELINE_START; y <= TIMELINE_END; y++) ticks.push(y);
-    return ticks;
-  }, []);
-
-  const xOf = (date: string) => {
-    const f = parseDateToYear(date);
-    const pct = (f - TIMELINE_START) / (TIMELINE_END - TIMELINE_START);
-    return 60 + pct * 900;
-  };
-
   return (
-    <div className="relative w-full h-full flex overflow-hidden">
-      {/* LEFT: timeline */}
-      <div className="flex-1 relative flex flex-col p-8 border-r border-high-text overflow-hidden">
-        <div className="flex flex-col z-10 mb-6">
-          <span className="text-[10px] font-mono uppercase opacity-50">Current System View</span>
-          <span className="text-3xl font-serif italic">政策时间轴 · Policy Timeline</span>
-          <span className="text-[11px] mt-1 opacity-50">横轴 {TIMELINE_START}–{TIMELINE_END} · 节点按部委着色 · 点击展开详情</span>
-        </div>
+    <div className="relative w-full h-full text-high-text font-sans overflow-hidden bg-[#efedea]">
+      <AnimatePresence mode="wait">
+        {!selected ? (
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex w-full h-full"
+          >
+            {/* LEFT COLUMN: LIVE FEED */}
+            <div className="w-[380px] shrink-0 border-r border-high-text flex flex-col bg-[#efedea] z-10">
+              {/* Filters */}
+              <div className="flex flex-col border-b border-high-text bg-high-muted shrink-0 divide-y divide-high-text/20">
+                <FilterRow label="Region">
+                  {(['ALL', 'CHN', 'USA', 'EUU', 'GBR', 'JPN', 'KOR', 'OTH'] as RegionFilter[]).map(r => (
+                    <FilterPill key={r} active={region === r} onClick={() => setRegion(r)}>{r}</FilterPill>
+                  ))}
+                </FilterRow>
+                <FilterRow label="Level">
+                  {(['ALL', 'national', 'ministerial', 'local'] as LevelFilter[]).map(lv => (
+                    <FilterPill key={lv} active={level === lv} onClick={() => setLevel(lv)}>
+                      {lv === 'ALL' ? 'ALL' : LEVEL_LABEL[lv]}
+                    </FilterPill>
+                  ))}
+                </FilterRow>
+                <FilterRow label="Domain">
+                  {(['ALL', 'MoST', 'MIIT', 'NDRC', 'International'] as DomainFilter[]).map(d => (
+                    <FilterPill key={d} active={domain === d} onClick={() => setDomain(d)}>
+                      {d === 'ALL' ? 'ALL' : DEPT_COLORS[d].label}
+                    </FilterPill>
+                  ))}
+                </FilterRow>
+              </div>
 
-        {/* Filter */}
-        <div className="flex items-center gap-2 mb-6 flex-wrap">
-          <div className="flex items-center gap-1.5 mr-2 text-[9px] font-mono uppercase opacity-50">
-            <Filter className="w-3 h-3" /> Department
-          </div>
-          {(['all', ...LANE_ORDER] as DeptFilter[]).map(d => {
-            const label = d === 'all' ? '全部' : DEPT_COLORS[d].label;
-            const color = d === 'all' ? '#141414' : DEPT_COLORS[d].fill;
-            const active = deptFilter === d;
-            return (
-              <button
-                key={d}
-                onClick={() => setDeptFilter(d)}
-                className={cn(
-                  'px-3 py-1 border border-high-text text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-2',
-                  active
-                    ? 'bg-high-text text-high-bg shadow-[2px_2px_0px_rgba(0,0,0,1)]'
-                    : 'opacity-60 hover:opacity-100 bg-transparent',
-                )}
-              >
-                {d !== 'all' && (
-                  <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                )}
-                {label}
-              </button>
-            );
-          })}
-          <div className="ml-auto text-[10px] font-mono opacity-50">
-            {filteredPolicies.length} / {POLICY_DATA.length} 条
-          </div>
-        </div>
-
-        {/* Timeline SVG */}
-        <div className="flex-1 relative flex items-center">
-          <svg viewBox="0 0 1000 280" className="w-full h-full overflow-visible">
-            <defs>
-              <pattern id="policyDot" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                <circle cx="0.5" cy="0.5" r="0.5" fill="#141414" opacity="0.08" />
-              </pattern>
-            </defs>
-            <rect width="1000" height="280" fill="url(#policyDot)" />
-
-            {/* Year axis */}
-            <line x1="60" y1="245" x2="960" y2="245" stroke="#141414" strokeWidth="0.6" />
-            {yearTicks.map(y => {
-              const x = xOf(`${y}-01`);
-              return (
-                <g key={y}>
-                  <line x1={x} y1="240" x2={x} y2="250" stroke="#141414" strokeWidth="0.6" />
-                  <text x={x} y="265" textAnchor="middle" className="text-[9px] font-mono fill-high-text opacity-60">
-                    {y}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Lane labels */}
-            {LANE_ORDER.map(dept => (
-              <g key={dept}>
-                <line x1="60" y1={LANE_Y[dept]} x2="960" y2={LANE_Y[dept]} stroke="#141414" strokeOpacity="0.08" strokeWidth="0.4" strokeDasharray="2,3" />
-                <text
-                  x="54"
-                  y={LANE_Y[dept] + 3}
-                  textAnchor="end"
-                  className="text-[9px] font-mono fill-high-text opacity-60 uppercase tracking-widest"
-                >
-                  {DEPT_COLORS[dept].label}
-                </text>
-                <circle cx="45" cy={LANE_Y[dept]} r="2" fill={DEPT_COLORS[dept].fill} />
-              </g>
-            ))}
-
-            {/* Policy nodes */}
-            {filteredPolicies.map(p => {
-              const x = xOf(p.date);
-              const y = LANE_Y[p.department];
-              const color = DEPT_COLORS[p.department].fill;
-              const isActive = selected?.id === p.id;
-              return (
-                <motion.g
-                  key={p.id}
-                  className="cursor-pointer"
-                  onClick={() => setSelected(p)}
-                  whileHover={{ scale: 1.1 }}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <line x1={x} y1={y} x2={x} y2="245" stroke={color} strokeWidth="0.5" strokeOpacity="0.3" />
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r={isActive ? 8 : 6}
-                    fill={isActive ? color : '#fff'}
-                    stroke={color}
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  {p.level === 'national' && (
-                    <circle cx={x} cy={y} r="2" fill={isActive ? '#fff' : color} />
+              {/* Scrolling list */}
+              <div className="flex-1 overflow-hidden relative">
+                <div className="absolute top-2 right-3 flex items-center gap-1 z-10 pointer-events-none opacity-60">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
+                  <span className="text-[8px] font-mono italic">STREAM</span>
+                </div>
+                <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar scroll-smooth">
+                  {filtered.length === 0 ? (
+                    <div className="p-8 text-center text-xs font-mono opacity-50">No policies match current filters.</div>
+                  ) : (
+                    <div className="flex flex-col">
+                      {[...filtered, ...(filtered.length > 2 ? filtered : [])].map((p, idx) => (
+                        <PolicyCard key={`${p.id}-${idx}`} policy={p} onClick={() => setSelected(p)} />
+                      ))}
+                    </div>
                   )}
-                  <text
-                    x={x}
-                    y={y - 12}
-                    textAnchor="middle"
-                    className={cn(
-                      'text-[8px] font-mono fill-high-text uppercase tracking-wider transition-opacity',
-                      isActive ? 'opacity-100 font-bold' : 'opacity-55',
-                    )}
-                  >
-                    {p.date}
-                  </text>
-                </motion.g>
-              );
-            })}
-          </svg>
-        </div>
+                </div>
+              </div>
+            </div>
 
-        {/* Legend */}
-        <div className="flex gap-6 text-[9px] font-mono uppercase opacity-50 mt-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full border border-high-text" />
-            部委级 / Ministerial
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-high-text border border-high-text" />
-            国家级 / National
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-4 h-0.5 bg-high-text opacity-40" />
-            时间轴 / Time Axis
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT: detail card */}
-      <div className="w-[400px] bg-white flex flex-col relative overflow-hidden">
-        <AnimatePresence mode="wait">
-          {selected ? (
-            <motion.div
-              key={selected.id}
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 100, opacity: 0 }}
-              className="flex-1 flex flex-col p-8 overflow-y-auto"
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-mono font-bold mb-1 uppercase" style={{ color: DEPT_COLORS[selected.department].fill }}>
-                    {selected.country} · {DEPT_COLORS[selected.department].label} · {selected.date}
-                  </div>
-                  <h2 className="text-2xl font-serif italic leading-tight mb-1">{selected.title}</h2>
-                  <p className="text-[11px] text-high-text/40 uppercase tracking-tighter font-medium">
-                    Policy · {selected.level}
+            {/* RIGHT COLUMN: TIMELINE */}
+            <div className="flex-1 flex flex-col relative bg-white overflow-hidden">
+              <div className="absolute inset-0 flex flex-col p-10 bg-high-bg/30 overflow-y-auto no-scrollbar">
+                <div className="mb-16 shrink-0">
+                  <h2 className="text-4xl font-serif italic mb-2 tracking-tight">
+                    {region === 'ALL' ? 'Global' : region} Innovation Lifecycle
+                  </h2>
+                  <p className="text-[11px] uppercase tracking-widest opacity-50 font-mono">
+                    Policy trajectory across the innovation chain
+                    {domain !== 'ALL' ? ` • ${DEPT_COLORS[domain as PolicyDepartment].label}` : ''}
+                    {level !== 'ALL' ? ` • ${LEVEL_LABEL[level]}` : ''}
                   </p>
                 </div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="px-2 py-1 border border-high-text text-[9px] font-mono uppercase hover:bg-high-text hover:text-white transition-colors shrink-0 ml-2"
-                >
-                  Close [ESC]
-                </button>
+
+                <div className="flex-1 relative flex items-center justify-between pb-8 min-h-[340px]">
+                  <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-px bg-high-text/30" />
+                  <div className="absolute right-10 top-1/2 border-t border-r border-high-text/50 w-2 h-2 rotate-45 -mt-[5px]" />
+
+                  {INNOVATION_STAGES.map((stage, i) => {
+                    const stagePolicies = filtered.filter(p => p.innovationStage === stage.id);
+                    return (
+                      <div key={stage.id} className="relative z-10 flex flex-col items-center flex-1 h-full pt-[50%]">
+                        <div className="absolute top-1/2 -translate-y-[14px] w-5 h-5 bg-white border-2 border-high-text rotate-45 shadow-[0_0_0_5px_rgba(228,227,224,1)] z-20 flex justify-center items-center">
+                          <div className="w-1.5 h-1.5 bg-high-text" />
+                        </div>
+                        <div className="absolute top-1/2 mt-4 flex flex-col items-center">
+                          <div className="text-[10px] font-bold uppercase tracking-widest font-mono bg-high-text text-white px-2 py-1 shadow-[2px_2px_0_rgba(0,0,0,0.3)]">
+                            {stage.name}
+                          </div>
+                          <div className="text-[9px] font-mono opacity-40 mt-1 uppercase">PHASE 0{i + 1}</div>
+                        </div>
+                        <div className="absolute bottom-1/2 mb-6 flex flex-col-reverse gap-3 items-center">
+                          {stagePolicies.slice(0, 4).map((p, idx) => (
+                            <motion.div
+                              key={p.id}
+                              onClick={() => setSelected(p)}
+                              className="w-[180px] p-3 border border-high-text bg-white shadow-[4px_4px_0_rgba(0,0,0,0.15)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer group relative"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.08 } }}
+                            >
+                              <div className="text-[8px] font-mono opacity-50 mb-1.5 flex justify-between">
+                                <span>{p.date}</span>
+                                <span className="uppercase text-high-accent font-bold">{LEVEL_LABEL[p.level]}</span>
+                              </div>
+                              <div className="font-bold text-xs font-serif leading-tight group-hover:text-high-accent transition-colors line-clamp-3">
+                                {p.title}
+                              </div>
+                              {idx === 0 && (
+                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[1px] h-6 bg-high-text/30 group-hover:bg-high-text/60" />
+                              )}
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-
-              <div className="space-y-6 flex-1">
-                <section>
-                  <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                    通俗摘要 / Abstract
-                  </h3>
-                  <p className="text-[13px] leading-relaxed text-high-text opacity-80">{selected.summary}</p>
-                </section>
-
-                <section>
-                  <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                    关联技术 / Related Tech
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selected.relatedTechnologies.length === 0 && (
-                      <span className="text-[11px] opacity-40">暂无</span>
-                    )}
-                    {selected.relatedTechnologies.map(techId => {
-                      const tech = ALL_SUB_TECHS.find(t => t.id === techId);
-                      if (!tech) return null;
-                      return (
-                        <button
-                          key={techId}
-                          onClick={() => onNavigateToTech?.(techId)}
-                          className="px-2.5 py-1 border border-high-text text-[10px] font-bold uppercase tracking-wider hover:bg-high-text hover:text-white transition-colors"
-                          title={`${tech.categoryName} · ${tech.name}`}
-                        >
-                          {tech.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                {selected.relatedIndustries.length > 0 && (
-                  <section>
-                    <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                      关联产业 / Related Industry
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selected.relatedIndustries.map(indId => {
-                        const ind = INDUSTRY_BY_ID[indId];
-                        if (!ind) return null;
-                        return (
-                          <button
-                            key={indId}
-                            onClick={() => onNavigateToIndustry?.(indId)}
-                            className="px-2.5 py-1 bg-high-muted border border-high-text text-[10px] font-bold uppercase tracking-wider hover:bg-high-text hover:text-white transition-colors"
-                          >
-                            {ind.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </section>
-                )}
-
-                {typeof selected.marketReactionDays === 'number' && (
-                  <section>
-                    <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                      市场反应 / Market Reaction
-                    </h3>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-serif italic">{selected.marketReactionDays}</span>
-                      <span className="text-[11px] font-mono uppercase opacity-60">Days · 一级市场首轮反应</span>
-                    </div>
-                  </section>
-                )}
-              </div>
-
-              <a
-                href={selected.fullTextUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 h-12 flex items-center justify-center gap-2 border border-high-text text-[10px] font-bold uppercase hover:bg-high-text hover:text-white transition-all active:scale-[0.98]"
-              >
-                查看原文 / View Source <ExternalLink className="w-3 h-3" />
-              </a>
-            </motion.div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center opacity-20 select-none">
-              <Info className="w-12 h-12 mb-4 stroke-1" />
-              <p className="text-xs uppercase tracking-[0.2em] font-bold">Select Policy Node<br />to view detail</p>
             </div>
-          )}
-        </AnimatePresence>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="selected"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex flex-col h-full z-20 bg-white overflow-hidden"
+          >
+            <div className="h-14 border-b border-high-text flex items-center px-6 bg-high-muted shrink-0 gap-3">
+              <button
+                onClick={() => setSelected(null)}
+                className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest border border-high-text bg-white px-3 py-1.5 hover:bg-high-text hover:text-white transition-colors"
+              >
+                ← Back to Trends
+              </button>
+              <div className="ml-auto flex items-center gap-2">
+                {selected.relatedTechnologies.slice(0, 2).map(techId => {
+                  const sub = ALL_SUB_TECHS.find(t => t.id === techId);
+                  if (!sub || !onNavigateToTech) return null;
+                  return (
+                    <button
+                      key={techId}
+                      onClick={() => onNavigateToTech(techId)}
+                      className="text-[10px] uppercase font-bold tracking-widest border border-high-text bg-white px-3 py-1.5 hover:bg-high-text hover:text-white transition-colors"
+                    >
+                      查看技术 · {sub.name}
+                    </button>
+                  );
+                })}
+                {selected.relatedIndustries[0] && onNavigateToIndustry && (
+                  <button
+                    onClick={() => onNavigateToIndustry(selected.relatedIndustries[0])}
+                    className="text-[10px] uppercase font-bold tracking-widest border border-high-text bg-white px-3 py-1.5 hover:bg-high-text hover:text-white transition-colors"
+                  >
+                    查看产业 · {INDUSTRY_BY_ID[selected.relatedIndustries[0]]?.name ?? ''}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 p-10 overflow-y-auto no-scrollbar shrink-0 border-b border-high-text">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="text-[10px] font-mono tracking-widest bg-high-text text-high-bg px-1.5 py-0.5 uppercase">
+                      {selected.country}
+                    </span>
+                    <span className="text-[8px] font-mono uppercase bg-high-text/10 px-1 font-bold border border-high-text/20">
+                      {LEVEL_LABEL[selected.level]}
+                    </span>
+                    <span className="text-[8px] font-mono uppercase bg-high-text/10 px-1 font-bold border border-high-text/20">
+                      {selected.departmentLabel}
+                    </span>
+                    <span className="text-[8px] font-mono uppercase text-high-accent font-bold border border-high-accent/30 px-1">
+                      Phase: {INNOVATION_STAGES.find(s => s.id === selected.innovationStage)?.name ?? '—'}
+                    </span>
+                  </div>
+                  <h2 className="text-3xl font-serif italic mb-4 max-w-2xl">{selected.title}</h2>
+                  <div className="text-[10px] font-mono opacity-50 uppercase">Date of Issue: {selected.date}</div>
+                </div>
+                <a
+                  href={selected.fullTextUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 border border-high-text px-3 py-1.5 hover:bg-high-text hover:text-high-bg transition-colors text-[10px] uppercase font-bold tracking-widest font-mono shrink-0"
+                >
+                  原文链接 <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div className="grid grid-cols-3 gap-12 mt-8">
+                <div className="col-span-2 space-y-8">
+                  <section>
+                    <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">概述 / Overview</h3>
+                    <p className="text-[13px] leading-loose opacity-90">{selected.summary}</p>
+                  </section>
+                  {selected.highlights && selected.highlights.length > 0 && (
+                    <section>
+                      <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">亮点措施 / Highlights</h3>
+                      <ul className="space-y-3">
+                        {selected.highlights.map((h, i) => (
+                          <li key={i} className="flex gap-3 text-[13px] items-start">
+                            <span className="text-high-accent text-lg leading-none mt-0.5">※</span>
+                            <span className="opacity-90 leading-relaxed">{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+                </div>
+
+                <div className="col-span-1 border-l border-high-text/20 pl-8">
+                  <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">关键词 / Tagging</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(selected.keywords ?? []).map(kw => (
+                      <span key={kw} className="px-2 py-1 border border-high-text bg-high-muted/50 text-[10px] font-bold shadow-[2px_2px_0_rgba(0,0,0,0.1)]">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                  {selected.marketReactionDays !== undefined && (
+                    <div className="mt-6">
+                      <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-2 uppercase tracking-widest font-bold">市场反应 / Reaction</h3>
+                      <div className="text-[12px] font-mono">
+                        <span className="text-high-accent text-2xl font-bold">{selected.marketReactionDays}</span>
+                        <span className="opacity-50 ml-1">days</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Correlated */}
+            <div className="h-[280px] shrink-0 bg-high-muted flex flex-col">
+              <div className="h-10 border-b border-high-text flex items-center px-6 bg-high-bg shrink-0 justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                  同类政策联动分析 / Correlated Matrix
+                </span>
+                <span className="text-[9px] font-mono opacity-40">{similar.length} correlated</span>
+              </div>
+              <div className="flex-1 flex overflow-hidden">
+                <div className="w-1/3 border-r border-high-text relative bg-[#E4E3E0]/50 overflow-hidden">
+                  <div className="absolute top-4 left-4 text-[9px] font-mono opacity-50 z-10">
+                    <GitCommit className="w-3 h-3 inline pb-0.5" /> THEMATIC CLUSTERS
+                  </div>
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 opacity-70">
+                    <div className="w-full aspect-[4/3] border border-high-text/20 flex flex-col gap-2 p-4 bg-white/30 relative">
+                      <div className="w-full h-6 border-2 border-high-text bg-high-bg flex items-center justify-center text-[8px] font-mono font-bold relative z-20">
+                        [ {selected.iso3 ?? '—'} ] BASE_NODE
+                      </div>
+                      <div className="flex flex-1 gap-2 relative mt-2 pt-4 border-t border-dashed border-high-text/30">
+                        <div className="absolute -top-[17px] left-1/2 w-px h-4 bg-high-text/50" />
+                        {similar.length === 0 && (
+                          <div className="w-full text-center text-[8px] font-mono opacity-50 flex items-center justify-center">
+                            NO STRONG CORRELATIONS
+                          </div>
+                        )}
+                        {similar.slice(0, 4).map(sim => (
+                          <div key={sim.id} className="flex-1 border border-high-text bg-high-text/5 flex items-center justify-center relative">
+                            <div className="absolute -top-4 left-1/2 w-px h-4 bg-high-text/30" />
+                            <span className="text-[8px] font-mono text-high-accent font-bold px-1">{sim.iso3 ?? '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-2/3 flex flex-col overflow-y-auto no-scrollbar pt-2 pb-6 px-6">
+                  {similar.length === 0 && (
+                    <div className="flex-1 flex items-center justify-center opacity-30 text-xs font-mono">
+                      No direct similarities mapped yet.
+                    </div>
+                  )}
+                  {similar.map(sim => (
+                    <div
+                      key={sim.id}
+                      className="border-b border-high-text/10 py-5 last:border-b-0 cursor-pointer hover:bg-high-text/5 group"
+                      onClick={() => setSelected(sim)}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[9px] font-bold font-mono bg-white border border-high-text px-1 uppercase scale-90">{sim.iso3 ?? '—'}</span>
+                        <span className="text-[8px] font-mono opacity-50 px-1 border border-high-text/20">
+                          {INNOVATION_STAGES.find(s => s.id === sim.innovationStage)?.name ?? '—'}
+                        </span>
+                        <h4 className="font-serif italic text-sm truncate group-hover:text-high-accent transition-colors">
+                          {sim.title}
+                        </h4>
+                      </div>
+                      <p className="text-xs opacity-70 pl-8 border-l border-high-accent/50 ml-[18px] leading-relaxed">
+                        <strong className="font-mono text-[9px] uppercase mr-2 text-high-accent bg-orange-500/10 px-1">
+                          Shared Tech:
+                        </strong>
+                        {sim.relatedTechnologies.slice(0, 3).join('、')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="h-10 flex items-center px-4 overflow-x-auto no-scrollbar">
+      <span className="text-[9px] font-mono font-bold mr-4 opacity-50 uppercase shrink-0 w-[50px]">{label}</span>
+      <div className="flex gap-2">{children}</div>
+    </div>
+  );
+}
+
+function FilterPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'text-[9px] px-2 py-0.5 font-bold border transition-all whitespace-nowrap',
+        active ? 'bg-high-text text-high-bg border-high-text' : 'border-high-text/50 bg-transparent hover:bg-high-text/10',
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PolicyCard({ policy, onClick }: { policy: Policy; onClick: () => void }) {
+  return (
+    <div
+      onClick={onClick}
+      className="p-5 border-b border-high-text/20 cursor-pointer transition-all duration-300 group hover:bg-high-text/5"
+    >
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex gap-2">
+          <span className="text-[9px] font-mono tracking-widest uppercase border border-high-text px-1 opacity-60">{policy.date}</span>
+          <span className="text-[9px] font-mono tracking-widest bg-high-accent text-white px-1 opacity-90">
+            {LEVEL_LABEL[policy.level]}
+          </span>
+        </div>
+        <span className="text-[10px] font-bold font-mono text-high-text">{policy.iso3 ?? '—'}</span>
+      </div>
+      <h3 className="font-serif font-bold text-[13px] mb-2 leading-snug group-hover:text-high-accent transition-colors">
+        {policy.title}
+      </h3>
+      <div className="flex gap-2 mb-1 flex-wrap">
+        <span className="text-[8px] px-1 bg-high-text/10 text-high-text/70 uppercase font-bold">
+          {INNOVATION_STAGES.find(s => s.id === policy.innovationStage)?.name ?? '—'}
+        </span>
+        <span className="text-[8px] px-1 bg-high-text/10 text-high-text/70 uppercase font-bold">{policy.departmentLabel}</span>
       </div>
     </div>
   );

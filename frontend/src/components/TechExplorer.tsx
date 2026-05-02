@@ -4,12 +4,25 @@ import { ExternalLink, Info } from 'lucide-react';
 import { TechnologyType, TechSubComponent } from '../types';
 import { TECH_DATA } from '../constants';
 import { cn } from '../lib/utils';
+import imgEmbodied from '../assets/embodied-ai.jpg';
+import imgBci from '../assets/bci.jpg';
+import imgQuantum from '../assets/quantum.jpg';
+import imgFusion from '../assets/fusion.jpg';
+
+const TECH_IMAGES: Record<string, string> = {
+  'embodied-ai': imgEmbodied,
+  'bci': imgBci,
+  'quantum': imgQuantum,
+  'fusion': imgFusion,
+};
 
 interface TechExplorerProps {
   techId: TechnologyType;
+  onNavigateToPolicy?: (policyId: string) => void;
+  onNavigateToIndustry?: (industryId: string) => void;
 }
 
-export default function TechExplorer({ techId }: TechExplorerProps) {
+export default function TechExplorer({ techId, onNavigateToPolicy, onNavigateToIndustry }: TechExplorerProps) {
   const data = TECH_DATA[techId] || TECH_DATA['embodied-ai'];
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<TechSubComponent | null>(null);
@@ -55,8 +68,17 @@ export default function TechExplorer({ techId }: TechExplorerProps) {
               </defs>
               <rect width="100" height="100" fill="url(#dotPattern)" />
 
-              {/* Central Abstract Body */}
-              <rect x="45" y="40" width="10" height="20" fill="none" stroke="#141414" strokeWidth="0.5" strokeDasharray="1,1" />
+              {/* Central Image */}
+              <image
+                href={TECH_IMAGES[techId] || imgEmbodied}
+                x="38"
+                y="32"
+                width="24"
+                height="24"
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="inset(0 round 2px)"
+                style={{ filter: 'grayscale(0.3) opacity(0.7)' }}
+              />
 
               {/* Connection Lines */}
               {data.categories.map((cat) => {
@@ -256,10 +278,16 @@ export default function TechExplorer({ techId }: TechExplorerProps) {
               </div>
 
               <div className="mt-auto pt-10 flex gap-2">
-                <button className="flex-1 h-12 border border-high-text text-[10px] font-bold uppercase hover:bg-high-text hover:text-white transition-all transform active:scale-[0.98]">
+                <button
+                  onClick={() => onNavigateToPolicy?.('')}
+                  className="flex-1 h-12 border border-high-text text-[10px] font-bold uppercase hover:bg-high-text hover:text-white transition-all transform active:scale-[0.98]"
+                >
                   查看相关政策
                 </button>
-                <button className="flex-1 h-12 border border-high-text text-[10px] font-bold uppercase hover:bg-high-text hover:text-white transition-all transform active:scale-[0.98]">
+                <button
+                  onClick={() => onNavigateToIndustry?.('')}
+                  className="flex-1 h-12 border border-high-text text-[10px] font-bold uppercase hover:bg-high-text hover:text-white transition-all transform active:scale-[0.98]"
+                >
                   查看产业应用
                 </button>
               </div>

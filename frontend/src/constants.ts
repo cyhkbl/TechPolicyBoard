@@ -1,4 +1,14 @@
-import { Industry, Policy, PolicyDepartment, TechnologyData } from './types';
+import {
+  ChainLayer,
+  FundingEvent,
+  Industry,
+  InnovationStage,
+  Policy,
+  PolicyDepartment,
+  Region,
+  TechnologyData,
+  TechnologyType,
+} from './types';
 
 export const DEPT_COLORS: Record<PolicyDepartment, { fill: string; label: string; twBg: string; twText: string }> = {
   MoST: { fill: '#2563eb', label: '科技部', twBg: 'bg-blue-600', twText: 'text-blue-700' },
@@ -1474,4 +1484,337 @@ export const ALL_SUB_TECHS: { id: string; name: string; categoryId: string; cate
     cat.subComponents.map(sub => ({ id: sub.id, name: sub.name, categoryId: cat.id, categoryName: cat.name })),
   ),
 );
+
+const COUNTRY_ISO3: Record<string, string> = {
+  '中国': 'CHN',
+  '美国': 'USA',
+  '欧盟': 'EUU',
+  '日本': 'JPN',
+  '韩国': 'KOR',
+  '英国': 'GBR',
+};
+
+const COUNTRY_COORDS: Record<string, { x: number; y: number }> = {
+  '中国': { x: 72, y: 42 },
+  '美国': { x: 22, y: 42 },
+  '欧盟': { x: 50, y: 32 },
+  '日本': { x: 82, y: 46 },
+  '韩国': { x: 78, y: 44 },
+  '英国': { x: 48, y: 28 },
+};
+
+function deriveInnovationStage(p: Policy): InnovationStage {
+  const text = `${p.title}${p.summary}`;
+  if (/(基础|前沿|基础研究|科学问题|原理)/.test(text)) return 'basic-research';
+  if (/(示范|试点|pilot|首台|验证)/.test(text)) return 'pilot';
+  if (/(产业化|量产|商业|市场|落地|商业化|商用)/.test(text)) return 'commercialization';
+  if (p.department === 'MoST') return 'basic-research';
+  if (p.department === 'MIIT') return 'applied-rd';
+  if (p.department === 'NDRC') return 'commercialization';
+  if (p.department === 'International') return 'applied-rd';
+  return 'applied-rd';
+}
+
+POLICY_DATA.forEach((p, i) => {
+  if (!p.iso3) p.iso3 = COUNTRY_ISO3[p.country] ?? 'OTH';
+  if (!p.coordinates) {
+    const base = COUNTRY_COORDS[p.country] ?? { x: 50, y: 50 };
+    const jitter = (i % 5) - 2;
+    p.coordinates = { x: base.x + jitter * 3, y: base.y + ((i >> 1) % 5 - 2) * 3 };
+  }
+  if (!p.innovationStage) p.innovationStage = deriveInnovationStage(p);
+  if (!p.keywords) {
+    const kws = new Set<string>();
+    p.relatedTechnologies.slice(0, 3).forEach(t => kws.add(t));
+    p.relatedIndustries.slice(0, 2).forEach(t => kws.add(t));
+    p.keywords = Array.from(kws);
+  }
+  if (!p.highlights) {
+    p.highlights = [p.summary.slice(0, 40), p.departmentLabel + ' · ' + p.date];
+  }
+});
+
+export const INNOVATION_STAGES: { id: InnovationStage; name: string; english: string }[] = [
+  { id: 'basic-research', name: '基础研究', english: 'Basic Research' },
+  { id: 'applied-rd', name: '应用研发', english: 'Applied R&D' },
+  { id: 'pilot', name: '示范试点', english: 'Pilot' },
+  { id: 'commercialization', name: '产业化', english: 'Commercialization' },
+];
+
+export const REGIONS: Region[] = [
+  {
+    id: 'beijing',
+    name: '北京',
+    englishName: 'Beijing',
+    coordinates: { x: 68, y: 30 },
+    endowment: '高校密集 · 国家实验室集群 · AI/脑机基础研究重镇',
+    policies: [
+      { id: 'most-embodied-ai', targetTrack: '具身智能基础研究', focus: '多模态大模型 / 世界模型' },
+      { id: 'brain-14fyp', targetTrack: '脑科学与类脑计算', focus: '脑机接口临床转化' },
+    ],
+    scenarios: [
+      { name: '中关村具身智能产业园', description: '国内最早集聚人形机器人创业公司的园区，聚焦软件算法与整机集成。', technologies: ['llm-agent', 'reinforcement-learning', 'world-model'] },
+      { name: '脑机接口临床中心', description: '依托宣武医院、天坛医院等，推动侵入式 BCI 临床试验。', technologies: ['bci-implant', 'bci-closed-loop'] },
+    ],
+  },
+  {
+    id: 'shanghai',
+    name: '上海',
+    englishName: 'Shanghai',
+    coordinates: { x: 78, y: 52 },
+    endowment: '金融资本密集 · 张江科学城 · 高端制造产业基础扎实',
+    policies: [
+      { id: 'humanoid-robot-guidance', targetTrack: '人形机器人整机', focus: '张江机器人谷 / 浦东具身智能基地' },
+      { id: 'quantum-14fyp', targetTrack: '量子科技', focus: '上海量子科学研究中心' },
+    ],
+    scenarios: [
+      { name: '张江人形机器人创新中心', description: '提供公共测试、中试与供应链对接平台。', technologies: ['servo-motor', 'joint-control', 'path-planning'] },
+      { name: '量子计算云平台', description: '国盾量子、本源量子等提供的云上量子计算服务。', technologies: ['q-superconducting', 'q-algorithm', 'q-programming'] },
+    ],
+  },
+  {
+    id: 'guangdong',
+    name: '广东',
+    englishName: 'Guangdong',
+    coordinates: { x: 70, y: 72 },
+    endowment: '电子制造供应链完备 · 深圳创业资本活跃 · 产业化效率高',
+    policies: [
+      { id: 'new-industrialization', targetTrack: '智能制造与机器人', focus: '深圳 / 佛山 / 东莞整机产业带' },
+      { id: 'miit-bci-standard-2024', targetTrack: 'BCI 医疗器械', focus: '深圳脑科学与脑机接口医疗专项' },
+    ],
+    scenarios: [
+      { name: '深圳人形机器人创新联合体', description: '优必选、越疆、大疆等整机公司联合推进量产化。', technologies: ['servo-motor', 'computer-vision', 'joint-control'] },
+      { name: '鹏城实验室具身智能训练场', description: '提供大规模仿真训练与真机测试。', technologies: ['reinforcement-learning', 'world-model'] },
+    ],
+  },
+  {
+    id: 'jiangsu',
+    name: '江苏',
+    englishName: 'Jiangsu',
+    coordinates: { x: 76, y: 50 },
+    endowment: '精密制造链长 · 苏州 BioBAY 生物医药 · 南京半导体基础好',
+    policies: [
+      { id: 'humanoid-robot-guidance', targetTrack: '关键零部件', focus: '苏州谐波减速器 / 力传感器集群' },
+      { id: 'brain-14fyp', targetTrack: '脑机接口核心芯片', focus: '苏州工业园 BioBAY' },
+    ],
+    scenarios: [
+      { name: '苏州关节减速器集群', description: '绿的谐波、双环传动等核心零部件企业集聚。', technologies: ['servo-motor', 'joint-control', 'force-sensor'] },
+      { name: '苏州脑机接口产业基地', description: 'BioBAY 内多家 BCI 初创公司推进采集芯片与植入器械。', technologies: ['bci-implant', 'bci-dl-decoder'] },
+    ],
+  },
+  {
+    id: 'anhui',
+    name: '安徽',
+    englishName: 'Anhui',
+    coordinates: { x: 73, y: 50 },
+    endowment: '核聚变基础研究（EAST）· 量子信息（中科大）双强',
+    policies: [
+      { id: 'most-fusion-2022', targetTrack: '核聚变基础研究', focus: '合肥科学岛 EAST 托卡马克' },
+      { id: 'quantum-14fyp', targetTrack: '量子通信与计算', focus: '中科大量子信息重点实验室' },
+    ],
+    scenarios: [
+      { name: '合肥 EAST 装置升级', description: '面向稳态长脉冲运行的工程研究平台。', technologies: ['f-tokamak', 'f-magnet', 'f-first-wall'] },
+      { name: '本源量子超导实验室', description: '国内首家提供全栈超导量子计算的商业公司。', technologies: ['q-superconducting', 'q-error-correction', 'q-programming'] },
+    ],
+  },
+  {
+    id: 'sichuan',
+    name: '四川',
+    englishName: 'Sichuan',
+    coordinates: { x: 58, y: 58 },
+    endowment: '核工业基础深厚 · 成都电子信息产业链',
+    policies: [
+      { id: 'most-fusion-2022', targetTrack: '聚变-裂变混合与材料', focus: '成都核工业第二研究设计院' },
+      { id: 'new-industrialization', targetTrack: '工业机器人', focus: '成都新经济 AI 产业园' },
+    ],
+    scenarios: [
+      { name: '核工业西南物理研究院', description: '中国环流三号 HL-3 托卡马克装置运行基地。', technologies: ['f-tokamak', 'f-tritium', 'f-neutron-shield'] },
+      { name: '成都高新 AI 机器人产业园', description: '覆盖服务机器人与工业机器人整机。', technologies: ['computer-vision', 'path-planning'] },
+    ],
+  },
+  {
+    id: 'zhejiang',
+    name: '浙江',
+    englishName: 'Zhejiang',
+    coordinates: { x: 77, y: 55 },
+    endowment: '互联网云计算基础 · 之江实验室 · 民营制造活力',
+    policies: [
+      { id: 'east-data-west-compute', targetTrack: '智算中心', focus: '杭州 / 乌镇云计算枢纽' },
+      { id: 'humanoid-robot-guidance', targetTrack: '机器人整机与应用', focus: '宁波杭州机器人产业集群' },
+    ],
+    scenarios: [
+      { name: '之江实验室具身智能联合研究', description: '推进多模态大模型与机器人交叉研究。', technologies: ['llm-agent', 'world-model'] },
+      { name: '杭州云栖算力枢纽', description: '阿里云智算中心覆盖大模型训练与推理。', technologies: ['reinforcement-learning', 'world-model'] },
+    ],
+  },
+  {
+    id: 'international',
+    name: '国际',
+    englishName: 'Intl',
+    coordinates: { x: 25, y: 38 },
+    endowment: '美 / 欧 / 日 / 韩 前沿科研与产业龙头',
+    policies: [
+      { id: 'chips-act', targetTrack: '半导体产业链', focus: '美国本土制造 / 出口管制' },
+      { id: 'us-brain-init-2-0', targetTrack: '脑科学', focus: 'NIH BRAIN 2.0 计划' },
+      { id: 'eu-quantum-chips-act', targetTrack: '量子芯片', focus: '欧盟量子旗舰计划' },
+      { id: 'iter-schedule-2024', targetTrack: '核聚变国际合作', focus: 'ITER 法国工程进度' },
+    ],
+    scenarios: [
+      { name: 'Tesla / Figure / 1X 整机', description: '北美具身智能整机龙头，主导 Optimus / 02 / Neo 量产路线。', technologies: ['computer-vision', 'reinforcement-learning', 'world-model'] },
+      { name: 'Neuralink / Synchron 临床', description: '北美 BCI 临床试验领先，推进人体植入。', technologies: ['bci-implant', 'bci-dl-decoder'] },
+      { name: 'IBM / Google / PsiQuantum', description: '超导 + 光量子双路线全球竞争。', technologies: ['q-superconducting', 'q-photonic', 'q-error-correction'] },
+    ],
+  },
+];
+
+export const REGIONS_BY_ID: Record<string, Region> = REGIONS.reduce((acc, r) => {
+  acc[r.id] = r;
+  return acc;
+}, {} as Record<string, Region>);
+
+export const FUNDING_EVENTS: FundingEvent[] = [
+  { id: 'f-ea-1', company: 'Figure AI', round: 'Series C', amount: '$1.5B', date: '2025-02', track: '人形机器人整机', techId: 'embodied-ai' },
+  { id: 'f-ea-2', company: '宇树科技', round: 'Series B+', amount: '¥1.2B', date: '2025-03', track: '四足 / 人形机器人', techId: 'embodied-ai' },
+  { id: 'f-ea-3', company: '智元机器人', round: 'A2', amount: '¥600M', date: '2024-11', track: '人形机器人', techId: 'embodied-ai' },
+  { id: 'f-ea-4', company: '银河通用', round: 'Pre-A', amount: '¥250M', date: '2025-01', track: '具身大模型', techId: 'embodied-ai' },
+  { id: 'f-ea-5', company: '千寻智能', round: 'Angel+', amount: '¥80M', date: '2024-12', track: '端到端 VLA 模型', techId: 'embodied-ai' },
+
+  { id: 'f-bci-1', company: 'Neuralink', round: 'Series E', amount: '$650M', date: '2024-08', track: '侵入式 BCI', techId: 'bci' },
+  { id: 'f-bci-2', company: 'Synchron', round: 'Series C', amount: '$75M', date: '2024-10', track: '微创血管 BCI', techId: 'bci' },
+  { id: 'f-bci-3', company: '脑虎科技', round: 'Series B', amount: '¥300M', date: '2025-01', track: '柔性电极 BCI', techId: 'bci' },
+  { id: 'f-bci-4', company: '博睿康', round: 'C+', amount: '¥200M', date: '2024-09', track: '采集设备', techId: 'bci' },
+  { id: 'f-bci-5', company: 'Precision Neuroscience', round: 'Series C', amount: '$102M', date: '2025-03', track: '皮层表面阵列', techId: 'bci' },
+
+  { id: 'f-q-1', company: 'PsiQuantum', round: 'Series E', amount: '$620M', date: '2025-02', track: '光量子计算', techId: 'quantum' },
+  { id: 'f-q-2', company: 'Quantinuum', round: 'Growth', amount: '$300M', date: '2024-12', track: '离子阱量子', techId: 'quantum' },
+  { id: 'f-q-3', company: '本源量子', round: 'C', amount: '¥600M', date: '2024-10', track: '超导量子计算', techId: 'quantum' },
+  { id: 'f-q-4', company: 'IonQ', round: 'Secondary', amount: '$500M', date: '2024-11', track: '离子阱 + 算法', techId: 'quantum' },
+  { id: 'f-q-5', company: '玻色量子', round: 'B', amount: '¥200M', date: '2025-01', track: '相干光量子', techId: 'quantum' },
+
+  { id: 'f-fu-1', company: 'Commonwealth Fusion', round: 'Series B2', amount: '$1.8B', date: '2024-09', track: '高温超导托卡马克', techId: 'fusion' },
+  { id: 'f-fu-2', company: 'Helion Energy', round: 'Series F', amount: '$425M', date: '2025-01', track: '磁惯性聚变', techId: 'fusion' },
+  { id: 'f-fu-3', company: '能量奇点', round: 'B', amount: '¥700M', date: '2024-12', track: '高温超导紧凑托卡马克', techId: 'fusion' },
+  { id: 'f-fu-4', company: 'TAE Technologies', round: 'Series G', amount: '$150M', date: '2025-03', track: '场反位形 FRC', techId: 'fusion' },
+  { id: 'f-fu-5', company: '星环聚能', round: 'A', amount: '¥500M', date: '2024-11', track: '反场箍缩 / 球马克', techId: 'fusion' },
+];
+
+export const CHAIN_MAP: Record<TechnologyType, ChainLayer[]> = {
+  'embodied-ai': [
+    {
+      layer: '上游',
+      items: [
+        { name: 'GPU / AI 芯片', heat: 'hot', amount: '$200B', reason: '供不应求，海外管制持续' },
+        { name: '六维力传感器', heat: 'warm', amount: '¥6B', gap: true, reason: '高精度国产化率 < 30%，主要依赖 ATI / Schunk' },
+        { name: '伺服电机 / 谐波减速器', heat: 'hot', amount: '¥18B' },
+        { name: '激光雷达 / 深度相机', heat: 'warm', amount: '¥15B' },
+        { name: '碳化硅功率器件', heat: 'cold', amount: '¥4B', gap: true, reason: '8 寸衬底良率仍低' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '多模态大模型', heat: 'hot', amount: '—', reason: 'VLA 端到端方案成主战场' },
+        { name: '仿真引擎', heat: 'warm', amount: '—', gap: true, reason: 'Isaac Sim / MuJoCo 国内替代缺失' },
+        { name: '整机本体', heat: 'hot', amount: '¥30B' },
+        { name: '操作系统 / 中间件', heat: 'warm', amount: '—' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '工厂 / 物流分拣', heat: 'warm', amount: '¥20B' },
+        { name: '家庭服务', heat: 'cold', amount: '—', gap: true, reason: '可靠性 / 成本尚不满足 C 端' },
+        { name: '商业服务（导览、迎宾）', heat: 'warm', amount: '¥8B' },
+        { name: '科研 / 教育', heat: 'hot', amount: '¥6B' },
+      ],
+    },
+  ],
+  'bci': [
+    {
+      layer: '上游',
+      items: [
+        { name: '微电极 / 柔性阵列', heat: 'hot', amount: '¥3B', gap: true, reason: '长期植入生物相容性难题' },
+        { name: '低噪声采集 ASIC', heat: 'warm', amount: '¥2B', gap: true, reason: '高通道功耗控制国内缺口' },
+        { name: '无线供电 / 通信', heat: 'warm', amount: '¥1.5B' },
+        { name: '植入手术机器人', heat: 'warm', amount: '¥2B' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '神经信号解码算法', heat: 'hot', amount: '—' },
+        { name: '刺激调控模式', heat: 'warm', amount: '—' },
+        { name: '临床试验 / IRB', heat: 'hot', amount: '—', gap: true, reason: '国内入组与伦理审批偏慢' },
+        { name: '器械整机', heat: 'warm', amount: '¥3B' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '运动康复（脊髓损伤）', heat: 'hot', amount: '¥4B' },
+        { name: '语言障碍（ALS）', heat: 'hot', amount: '¥2B' },
+        { name: '癫痫 / 抑郁闭环调控', heat: 'warm', amount: '¥3B' },
+        { name: '消费增强', heat: 'cold', amount: '—', gap: true, reason: '监管与伦理尚未放开' },
+      ],
+    },
+  ],
+  'quantum': [
+    {
+      layer: '上游',
+      items: [
+        { name: '稀释制冷机', heat: 'warm', amount: '¥2B', gap: true, reason: 'BlueFors 等进口依赖' },
+        { name: '超导 / 离子阱芯片', heat: 'hot', amount: '¥3B' },
+        { name: '微波电子学', heat: 'warm', amount: '¥1.5B' },
+        { name: '激光与真空系统', heat: 'warm', amount: '¥1.2B' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '量子纠错编码', heat: 'hot', amount: '—', gap: true, reason: '逻辑量子比特阈值仍未突破' },
+        { name: '量子算法库', heat: 'warm', amount: '—' },
+        { name: '量子编译 / 控制栈', heat: 'warm', amount: '—' },
+        { name: '整机集成', heat: 'hot', amount: '¥2B' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '量子化学模拟', heat: 'warm', amount: '¥1B' },
+        { name: '金融组合优化', heat: 'cold', amount: '—', gap: true, reason: '实用量子优势尚未出现' },
+        { name: '量子云服务', heat: 'warm', amount: '¥0.8B' },
+        { name: '后量子密码', heat: 'hot', amount: '¥1.5B' },
+      ],
+    },
+  ],
+  'fusion': [
+    {
+      layer: '上游',
+      items: [
+        { name: '高温超导带材', heat: 'hot', amount: '¥4B', gap: true, reason: '千米级长带产能不足' },
+        { name: '面向等离子体材料', heat: 'warm', amount: '¥2B', gap: true, reason: '钨 / 碳化硼抗中子辐照' },
+        { name: '氚自持包层', heat: 'cold', amount: '—', gap: true, reason: '工程验证尚在早期' },
+        { name: '大功率电源', heat: 'warm', amount: '¥1.5B' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '托卡马克主机', heat: 'hot', amount: '—' },
+        { name: '惯性靶丸与驱动', heat: 'warm', amount: '—' },
+        { name: '诊断与控制系统', heat: 'warm', amount: '—' },
+        { name: '整机工程集成', heat: 'hot', amount: '¥8B' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '示范电站', heat: 'hot', amount: '—' },
+        { name: '聚变中子源应用', heat: 'warm', amount: '¥0.5B' },
+        { name: '并网商业运营', heat: 'cold', amount: '—', gap: true, reason: '需解决持续运行与成本' },
+        { name: '氦-3 / 医用同位素', heat: 'warm', amount: '¥0.3B' },
+      ],
+    },
+  ],
+};
 

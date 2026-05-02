@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, Info, Factory } from 'lucide-react';
-import type { Industry, IndustryChainStage } from '../types';
-import { INDUSTRY_DATA, ALL_SUB_TECHS, POLICY_BY_ID, DEPT_COLORS } from '../constants';
+import { Map, Cpu, FileText, Factory, ChevronLeft, Target } from 'lucide-react';
+import type { Region } from '../types';
+import { REGIONS, REGIONS_BY_ID, POLICY_BY_ID, ALL_SUB_TECHS } from '../constants';
 import { cn } from '../lib/utils';
 
 interface IndustryChainProps {
@@ -12,263 +12,246 @@ interface IndustryChainProps {
 }
 
 export default function IndustryChain({ focusIndustryId, onNavigateToTech, onNavigateToPolicy }: IndustryChainProps) {
-  const defaultId = focusIndustryId && INDUSTRY_DATA.find(i => i.id === focusIndustryId) ? focusIndustryId : INDUSTRY_DATA[0].id;
-  const [activeId, setActiveId] = useState<string>(defaultId);
-  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Region | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
 
-  const industry = useMemo<Industry>(
-    () => INDUSTRY_DATA.find(i => i.id === activeId) || INDUSTRY_DATA[0],
-    [activeId],
-  );
+  useEffect(() => {
+    if (!focusIndustryId) return;
+    // focusIndustryId may carry industry id (e.g. 'humanoid-robot') or region id. Try both.
+    const byRegion = REGIONS_BY_ID[focusIndustryId];
+    if (byRegion) {
+      setSelected(byRegion);
+      return;
+    }
+    // Fall back to first region whose scenarios mention that industry id
+    const byScenario = REGIONS.find(r => r.scenarios.some(s => s.technologies.includes(focusIndustryId)));
+    if (byScenario) setSelected(byScenario);
+  }, [focusIndustryId]);
 
-  const selectedStage: IndustryChainStage | null = useMemo(
-    () => industry.chainStages.find(s => s.id === selectedStageId) || null,
-    [industry, selectedStageId],
+  const renderMap = () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+      <path
+        d="M20 20 L80 15 L95 40 L85 85 L60 95 L25 85 L10 50 Z"
+        fill="none"
+        stroke="#141414"
+        strokeWidth="0.2"
+        strokeDasharray="1 2"
+        className="opacity-20"
+      />
+      <g className="opacity-30">
+        {REGIONS.map((a, i) => REGIONS.slice(i + 1).map(b => {
+          const dx = a.coordinates.x - b.coordinates.x;
+          const dy = a.coordinates.y - b.coordinates.y;
+          if (Math.hypot(dx, dy) > 28) return null;
+          return (
+            <line
+              key={`${a.id}-${b.id}`}
+              x1={a.coordinates.x} y1={a.coordinates.y}
+              x2={b.coordinates.x} y2={b.coordinates.y}
+              stroke="#141414" strokeWidth="0.4"
+            />
+          );
+        }))}
+      </g>
+
+      {REGIONS.map(region => {
+        const isHovered = hovered === region.id;
+        return (
+          <g
+            key={region.id}
+            transform={`translate(${region.coordinates.x}, ${region.coordinates.y})`}
+            onMouseEnter={() => setHovered(region.id)}
+            onMouseLeave={() => setHovered(null)}
+            onClick={() => setSelected(region)}
+            className="cursor-pointer"
+          >
+            {isHovered && <circle r="6" fill="#f97316" className="opacity-20 animate-ping" />}
+            <circle r={isHovered ? '3.5' : '2'} fill={isHovered ? '#f97316' : '#141414'} className="transition-all duration-300" />
+            <circle
+              r="6"
+              fill="transparent"
+              stroke={isHovered ? '#f97316' : '#141414'}
+              strokeWidth="0.3"
+              strokeDasharray="0.5 1"
+              className={cn('transition-all duration-500', isHovered ? 'rotate-180' : '')}
+              style={{ transformOrigin: 'center' }}
+            />
+            <text x="5" y="-4" className={cn('text-[2.5px] font-bold font-mono tracking-widest transition-all', isHovered ? 'fill-[#f97316]' : 'fill-[#141414]')}>
+              {region.englishName.toUpperCase()}
+            </text>
+            <text x="5" y="0" className={cn('text-[2px] transition-all', isHovered ? 'fill-[#141414] font-bold' : 'fill-[#141414] opacity-50')}>
+              {region.name}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
   );
 
   return (
-    <div className="relative w-full h-full flex overflow-hidden">
-      <div className="flex-1 relative flex flex-col p-8 border-r border-high-text overflow-hidden">
-        <div className="flex flex-col z-10 mb-6">
-          <span className="text-[10px] font-mono uppercase opacity-50">Current System View</span>
-          <span className="text-3xl font-serif italic">{industry.name} 产业链 · Value Chain</span>
-          <span className="text-[11px] mt-1 opacity-50">{industry.tagline}</span>
-        </div>
-
-        {/* Industry selector */}
-        <div className="flex items-center gap-2 mb-8 flex-wrap">
-          <div className="flex items-center gap-1.5 mr-2 text-[9px] font-mono uppercase opacity-50">
-            <Factory className="w-3 h-3" /> Industry
-          </div>
-          {INDUSTRY_DATA.map(ind => {
-            const active = activeId === ind.id;
-            return (
-              <button
-                key={ind.id}
-                onClick={() => {
-                  setActiveId(ind.id);
-                  setSelectedStageId(null);
-                }}
-                className={cn(
-                  'px-3 py-1 border border-high-text text-[10px] font-bold uppercase tracking-wider transition-all',
-                  active
-                    ? 'bg-high-text text-high-bg shadow-[2px_2px_0px_rgba(0,0,0,1)]'
-                    : 'opacity-60 hover:opacity-100 bg-transparent',
-                )}
-              >
-                {ind.name}
-              </button>
-            );
-          })}
-          <div className="ml-auto text-[10px] font-mono opacity-50 uppercase">
-            ref: {industry.nationalPlanRef}
-          </div>
-        </div>
-
-        {/* Chain row */}
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="text-[9px] font-mono uppercase opacity-50 mb-3 tracking-widest">
-            基础研究 → 工程实现 → 零部件 → 整机/系统 → 产业应用
-          </div>
-          <div className="flex items-stretch gap-0 overflow-x-auto no-scrollbar">
-            {industry.chainStages.map((stage, idx) => {
-              const active = selectedStageId === stage.id;
-              const isLast = idx === industry.chainStages.length - 1;
-              return (
-                <div key={stage.id} className="flex items-stretch">
-                  <motion.button
-                    onClick={() => setSelectedStageId(stage.id)}
-                    className={cn(
-                      'relative flex-1 min-w-[140px] border border-high-text px-4 py-5 text-left transition-all',
-                      active
-                        ? 'bg-high-text text-high-bg shadow-[2px_2px_0px_rgba(0,0,0,1)]'
-                        : 'bg-white hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]',
-                    )}
-                    whileHover={{ y: -2 }}
-                  >
-                    <div className={cn('text-[9px] font-mono uppercase tracking-widest mb-1', active ? 'opacity-60' : 'text-high-accent')}>
-                      {String(idx + 1).padStart(2, '0')} / {String(industry.chainStages.length).padStart(2, '0')}
-                    </div>
-                    <div className={cn('font-serif italic text-lg leading-tight mb-1')}>{stage.shortLabel}</div>
-                    <div className={cn('text-[10px] leading-snug', active ? 'opacity-70' : 'opacity-50')}>
-                      {stage.name}
-                    </div>
-                    {stage.technologyIds.length > 0 && (
-                      <div className={cn('mt-2 text-[9px] font-mono uppercase', active ? 'opacity-60' : 'opacity-40')}>
-                        · {stage.technologyIds.length} Tech
-                      </div>
-                    )}
-                  </motion.button>
-                  {!isLast && (
-                    <div className="flex items-center justify-center w-6 shrink-0">
-                      <ChevronRight className="w-4 h-4 opacity-50" />
-                    </div>
-                  )}
+    <div className="relative w-full h-full text-[#141414] font-sans flex overflow-hidden bg-[#efedea]">
+      <AnimatePresence mode="wait">
+        {!selected ? (
+          <motion.div
+            key="map-view"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+            className="w-full h-full flex"
+          >
+            <div className="w-1/2 relative bg-[#E4E3E0] border-r border-[#141414] p-8 flex flex-col items-center justify-center">
+              <div className="absolute top-8 left-8">
+                <h2 className="text-3xl font-serif italic mb-2 tracking-tight">Geo-Industrial<br />Synergy Graph</h2>
+                <div className="text-[10px] font-mono uppercase opacity-50 flex items-center gap-2">
+                  <Map className="w-3 h-3" /> Select a hub to analyze
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Related policies strip */}
-          <div className="mt-10">
-            <div className="text-[9px] font-mono uppercase opacity-50 mb-3 tracking-widest">关联政策 / Policies</div>
-            <div className="flex flex-wrap gap-2">
-              {industry.relatedPolicies.map(pid => {
-                const policy = POLICY_BY_ID[pid];
-                if (!policy) return null;
-                const color = DEPT_COLORS[policy.department].fill;
-                return (
-                  <button
-                    key={pid}
-                    onClick={() => onNavigateToPolicy?.(pid)}
-                    className="px-2.5 py-1 bg-white border border-high-text text-[10px] font-bold uppercase tracking-wider hover:bg-high-text hover:text-white transition-colors flex items-center gap-1.5"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
-                    <span className="opacity-60 font-mono normal-case">{policy.date}</span>
-                    <span>{policy.title.replace(/《|》/g, '').slice(0, 14)}</span>
-                  </button>
-                );
-              })}
+              </div>
+              <div className="w-full max-w-lg aspect-square relative mt-16">
+                {renderMap()}
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex gap-6 text-[9px] font-mono uppercase opacity-40 mt-6">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 border border-high-text" />
-            环节 / Stage
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 bg-high-text" />
-            当前选中 / Active
-          </div>
-          <div className="flex items-center gap-1.5">
-            <ChevronRight className="w-3 h-3" />
-            价值流向 / Flow
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT: stage detail */}
-      <div className="w-[400px] bg-white flex flex-col relative overflow-hidden">
-        <AnimatePresence mode="wait">
-          {selectedStage ? (
-            <motion.div
-              key={`${industry.id}-${selectedStage.id}`}
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 100, opacity: 0 }}
-              className="flex-1 flex flex-col p-8 overflow-y-auto"
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-mono text-high-accent font-bold mb-1 uppercase">
-                    STAGE · {selectedStage.id.toUpperCase()}
+            <div className="w-1/2 bg-[#efedea] p-12 flex flex-col justify-center">
+              {hovered ? (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#f97316] font-bold border border-[#f97316] inline-block px-1.5 py-0.5">
+                      HUB_ID: {REGIONS_BY_ID[hovered]?.englishName.toUpperCase()}
+                    </div>
+                    <h3 className="text-4xl font-serif italic">{REGIONS_BY_ID[hovered]?.name}</h3>
+                    <div className="text-xs uppercase font-mono tracking-widest opacity-50 border-b border-[#141414]/30 pb-4">
+                      {REGIONS_BY_ID[hovered]?.englishName}
+                    </div>
                   </div>
-                  <h2 className="text-3xl font-serif italic leading-tight">{selectedStage.name}</h2>
-                  <p className="text-[11px] text-high-text/40 mt-1 uppercase tracking-tighter font-medium">
-                    in {industry.name}
-                  </p>
+                  <div>
+                    <h4 className="text-[10px] font-mono uppercase tracking-widest border-l-2 border-[#141414] pl-2 mb-3 font-bold">产业禀赋 / Endowment</h4>
+                    <p className="text-lg leading-relaxed bg-[#141414]/5 p-4 border border-[#141414]/10">
+                      {REGIONS_BY_ID[hovered]?.endowment}
+                    </p>
+                  </div>
+                  <div className="text-xs font-mono opacity-50 flex items-center gap-2">
+                    <div className="w-4 h-px bg-[#141414]" />
+                    Click node on map to drill down into policies and scenarios
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center opacity-20 text-center">
+                  <Target className="w-16 h-16 mb-4 stroke-1" />
+                  <p className="text-sm font-mono uppercase tracking-widest">Awaiting spatial selection.</p>
                 </div>
-                <button
-                  onClick={() => setSelectedStageId(null)}
-                  className="px-2 py-1 border border-high-text text-[9px] font-mono uppercase hover:bg-high-text hover:text-white transition-colors shrink-0 ml-2"
-                >
-                  Close
-                </button>
+              )}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="detail-view"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex flex-col overflow-hidden bg-white z-20"
+          >
+            <div className="h-16 border-b border-[#141414] bg-[#DCDAD7] flex items-center px-8 shrink-0 justify-between">
+              <button
+                onClick={() => setSelected(null)}
+                className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest border border-[#141414] bg-white px-4 py-2 hover:bg-[#141414] hover:text-white transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" /> Back to Matrix
+              </button>
+              <div className="flex gap-4 items-center">
+                <span className="text-[10px] font-mono font-bold uppercase bg-[#141414] text-white px-2 py-1 shadow-[2px_2px_0px_rgba(249,115,22,1)]">
+                  {selected.englishName.toUpperCase()}
+                </span>
+                <h2 className="text-xl font-serif italic pr-4 border-r border-[#141414]/30">{selected.name}</h2>
+                <span className="text-xs font-mono uppercase opacity-50 tracking-widest">{selected.englishName}</span>
               </div>
+            </div>
 
-              <div className="space-y-6 flex-1">
-                <section>
-                  <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                    环节说明 / Description
-                  </h3>
-                  <p className="text-[13px] leading-relaxed text-high-text opacity-80">
-                    {selectedStage.description}
-                  </p>
-                </section>
+            <div className="bg-[#141414]/5 border-b border-[#141414] p-6 shrink-0 text-center">
+              <span className="text-[9px] font-mono font-bold uppercase text-[#f97316] mb-1 block tracking-widest">Core Endowment</span>
+              <p className="text-sm font-bold tracking-wide">{selected.endowment}</p>
+            </div>
 
-                <section>
-                  <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                    关联技术 / Tech Stack
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedStage.technologyIds.length === 0 && (
-                      <span className="text-[11px] opacity-40">此环节未标注关联技术</span>
-                    )}
-                    {selectedStage.technologyIds.map(techId => {
-                      const tech = ALL_SUB_TECHS.find(t => t.id === techId);
-                      if (!tech) return null;
-                      return (
-                        <button
-                          key={techId}
-                          onClick={() => onNavigateToTech?.(techId)}
-                          className="px-2.5 py-1 border border-high-text text-[10px] font-bold uppercase tracking-wider hover:bg-high-text hover:text-white transition-colors"
-                          title={tech.categoryName}
-                        >
-                          {tech.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                    产业链位置 / Position
-                  </h3>
-                  <div className="flex items-center gap-1 text-[10px] font-mono uppercase">
-                    {industry.chainStages.map((s, i) => (
-                      <div key={s.id} className="flex items-center gap-1">
-                        <span
-                          className={cn(
-                            'px-1.5 py-0.5 border',
-                            s.id === selectedStage.id
-                              ? 'bg-high-text text-high-bg border-high-text'
-                              : 'border-high-text/40 opacity-60',
-                          )}
-                        >
-                          {s.shortLabel}
-                        </span>
-                        {i < industry.chainStages.length - 1 && <ChevronRight className="w-3 h-3 opacity-40" />}
+            <div className="flex-1 flex overflow-hidden">
+              <div className="w-[450px] shrink-0 border-r border-[#141414] bg-[#E4E3E0]/30 flex flex-col">
+                <div className="h-12 border-b border-[#141414] flex items-center px-6 bg-[#DCDAD7]">
+                  <FileText className="w-4 h-4 mr-2" />
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-widest">区域产业政策</h3>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {selected.policies.map((ref, idx) => {
+                    const policy = POLICY_BY_ID[ref.id];
+                    return (
+                      <div
+                        key={`${ref.id}-${idx}`}
+                        onClick={() => onNavigateToPolicy?.(ref.id)}
+                        className="bg-white border border-[#141414] p-5 shadow-[4px_4px_0_rgba(0,0,0,0.1)] relative group hover:-translate-y-1 hover:shadow-[6px_6px_0_rgba(0,0,0,0.15)] transition-all cursor-pointer"
+                      >
+                        <div className="absolute top-0 right-0 border-b border-l border-[#141414] bg-[#141414] text-white text-[9px] font-mono px-2 py-1 flex items-center gap-1">
+                          <Target className="w-3 h-3" /> {ref.targetTrack}
+                        </div>
+                        <div className="text-[10px] font-mono opacity-50 mb-3 uppercase flex items-center gap-2 mt-2">
+                          <span className="inline-block w-1.5 h-1.5 bg-[#f97316]" /> {policy?.date ?? '—'}
+                        </div>
+                        <h4 className="font-serif font-bold text-sm mb-4 leading-snug">《{policy?.title ?? ref.id}》</h4>
+                        <div className="text-xs bg-[#141414]/5 p-3 border-l-2 border-[#141414] leading-relaxed">
+                          <strong className="text-[9px] font-mono uppercase tracking-widest font-bold opacity-60 block mb-1">Focus Area</strong>
+                          {ref.focus}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={`${industry.id}-overview`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex-1 flex flex-col p-8 overflow-y-auto"
-            >
-              <div className="mb-6">
-                <div className="text-[10px] font-mono text-high-accent font-bold mb-1 uppercase">
-                  INDUSTRY · {industry.id.toUpperCase()}
+                    );
+                  })}
                 </div>
-                <h2 className="text-3xl font-serif italic leading-tight">{industry.name}</h2>
-                <p className="text-[11px] text-high-text/40 mt-1 uppercase tracking-tighter font-medium">
-                  {industry.nationalPlanRef}
-                </p>
               </div>
 
-              <section className="mb-6">
-                <h3 className="text-[10px] font-mono border-b border-high-text pb-1 mb-3 uppercase tracking-widest font-bold">
-                  产业简介 / Overview
-                </h3>
-                <p className="text-[13px] leading-relaxed text-high-text opacity-80">{industry.description}</p>
-              </section>
-
-              <div className="mt-auto text-center text-[11px] opacity-40 uppercase tracking-[0.2em] py-4 border-t border-high-text/10">
-                <Info className="w-8 h-8 mx-auto mb-2 stroke-1" />
-                点击左侧环节 查看详情
+              <div className="flex-1 flex flex-col bg-white">
+                <div className="h-12 border-b border-[#141414] flex items-center px-6 bg-[#DCDAD7]">
+                  <Factory className="w-4 h-4 mr-2" />
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-widest">产业应用案例场景</h3>
+                </div>
+                <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-8 content-start bg-[radial-gradient(#141414_1px,transparent_1px)] [background-size:16px_16px] [background-position:-8px_-8px] relative before:absolute before:inset-0 before:bg-white/90">
+                  {selected.scenarios.map((scenario, idx) => (
+                    <div key={idx} className="bg-white border-2 border-[#141414] p-6 relative z-10 flex flex-col shadow-[8px_8px_0_rgba(20,20,20,1)]">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-full border border-[#141414] flex items-center justify-center bg-[#DCDAD7] shrink-0 font-serif italic font-bold">
+                          {idx + 1}
+                        </div>
+                        <h4 className="font-bold text-lg leading-tight">{scenario.name}</h4>
+                      </div>
+                      <p className="text-sm opacity-80 leading-relaxed mb-6 flex-1">{scenario.description}</p>
+                      <div className="border-t border-[#141414] pt-4 mt-auto">
+                        <div className="text-[9px] font-mono uppercase tracking-widest opacity-50 mb-3 flex items-center gap-2">
+                          <Cpu className="w-3 h-3" /> Core Technologies Applied
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {scenario.technologies.map(techId => {
+                            const sub = ALL_SUB_TECHS.find(t => t.id === techId);
+                            const label = sub?.name ?? techId;
+                            const clickable = Boolean(sub && onNavigateToTech);
+                            return (
+                              <span
+                                key={techId}
+                                onClick={() => clickable && onNavigateToTech!(techId)}
+                                className={cn(
+                                  'px-2 py-1 border border-[#141414]/30 bg-[#efedea] text-[10px] font-bold',
+                                  clickable && 'cursor-pointer hover:bg-[#141414] hover:text-white transition-colors',
+                                )}
+                              >
+                                {label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

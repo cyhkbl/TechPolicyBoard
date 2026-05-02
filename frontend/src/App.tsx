@@ -53,7 +53,7 @@ export default function App() {
       <header className="h-14 border-b border-high-text flex items-center px-6 justify-between shrink-0 bg-high-muted">
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 border border-high-text flex items-center justify-center font-mono text-xs font-bold">T.E</div>
-          <h1 className="font-serif italic text-lg tracking-tight">Future Horizon Explorer</h1>
+          <h1 className="font-serif italic text-lg tracking-tight">TechPolicyBoard</h1>
         </div>
         <nav className="flex gap-1 h-full items-center">
           {TECHNOLOGIES.map((tech) => (
@@ -102,7 +102,13 @@ export default function App() {
             transition={{ duration: 0.2 }}
             className="flex-1 overflow-hidden"
           >
-            {activeModule === 'explorer' && <TechExplorer techId={activeTech} />}
+            {activeModule === 'explorer' && (
+              <TechExplorer
+                techId={activeTech}
+                onNavigateToPolicy={(policyId) => policyId ? navigateToPolicy(policyId) : setActiveModule('policy')}
+                onNavigateToIndustry={(industryId) => industryId ? navigateToIndustry(industryId) : setActiveModule('industry')}
+              />
+            )}
             {activeModule === 'policy' && (
               <PolicyTracker
                 currentTech={activeTech}
@@ -118,7 +124,12 @@ export default function App() {
                 onNavigateToPolicy={navigateToPolicy}
               />
             )}
-            {activeModule === 'market' && <MarketTrends />}
+            {activeModule === 'market' && (
+              <MarketTrends
+                activeTech={activeTech}
+                onNavigateToPolicy={navigateToPolicy}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
