@@ -1,7 +1,5 @@
-from __future__ import annotations
 from pathlib import Path
 import json
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 
@@ -15,7 +13,7 @@ def _load() -> dict:
 
 
 @router.get("/policies")
-def list_policies(department: Optional[str] = None) -> dict:
+def list_policies(department: str | None = None) -> dict:
     payload = _load()
     items = payload.get("policies", [])
     if department and department != "all":

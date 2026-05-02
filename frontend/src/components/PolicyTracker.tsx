@@ -134,63 +134,113 @@ export default function PolicyTracker({
               </div>
             </div>
 
-            {/* RIGHT COLUMN: TIMELINE */}
-            <div className="flex-1 flex flex-col relative bg-white overflow-hidden">
-              <div className="absolute inset-0 flex flex-col p-10 bg-high-bg/30 overflow-y-auto no-scrollbar">
-                <div className="mb-16 shrink-0">
-                  <h2 className="text-4xl font-serif italic mb-2 tracking-tight">
-                    {region === 'ALL' ? 'Global' : region} Innovation Lifecycle
-                  </h2>
-                  <p className="text-[11px] uppercase tracking-widest opacity-50 font-mono">
-                    Policy trajectory across the innovation chain
-                    {domain !== 'ALL' ? ` • ${DEPT_COLORS[domain as PolicyDepartment].label}` : ''}
-                    {level !== 'ALL' ? ` • ${LEVEL_LABEL[level]}` : ''}
-                  </p>
-                </div>
+            {/* RIGHT COLUMN: LIFECYCLE PANORAMA */}
+            <div className="flex-1 flex flex-col overflow-hidden bg-white relative">
+              {/* Header */}
+              <div className="shrink-0 px-8 pt-7 pb-3 border-b border-high-text/10">
+                <h2 className="text-3xl font-serif italic mb-1 tracking-tight">
+                  {region === 'ALL' ? '全球' : region} 创新周期政策图谱
+                </h2>
+                <p className="text-[10px] uppercase tracking-widest opacity-40 font-mono">
+                  Policy trajectory across the innovation chain
+                  {domain !== 'ALL' ? ` · ${DEPT_COLORS[domain as PolicyDepartment].label}` : ''}
+                  {level !== 'ALL' ? ` · ${LEVEL_LABEL[level]}` : ''}
+                </p>
+              </div>
 
-                <div className="flex-1 relative flex items-center justify-between pb-8 min-h-[340px]">
-                  <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-px bg-high-text/30" />
-                  <div className="absolute right-10 top-1/2 border-t border-r border-high-text/50 w-2 h-2 rotate-45 -mt-[5px]" />
-
-                  {INNOVATION_STAGES.map((stage, i) => {
-                    const stagePolicies = filtered.filter(p => p.innovationStage === stage.id);
-                    return (
-                      <div key={stage.id} className="relative z-10 flex flex-col items-center flex-1 h-full pt-[50%]">
-                        <div className="absolute top-1/2 -translate-y-[14px] w-5 h-5 bg-white border-2 border-high-text rotate-45 shadow-[0_0_0_5px_rgba(228,227,224,1)] z-20 flex justify-center items-center">
-                          <div className="w-1.5 h-1.5 bg-high-text" />
-                        </div>
-                        <div className="absolute top-1/2 mt-4 flex flex-col items-center">
-                          <div className="text-[10px] font-bold uppercase tracking-widest font-mono bg-high-text text-white px-2 py-1 shadow-[2px_2px_0_rgba(0,0,0,0.3)]">
-                            {stage.name}
+              {/* Axis + Stage Markers */}
+              {(() => {
+                const STAGE_LABEL: Record<string, string> = {
+                  'basic-research': '基础研究',
+                  'applied-rd': '技术应用',
+                  'pilot': '产业发展',
+                  'commercialization': '生态监管',
+                };
+                return (
+                  <div className="shrink-0 relative h-[84px] mx-8 mt-2">
+                    {/* Horizontal line */}
+                    <div className="absolute left-[12.5%] right-4 top-[38px] h-px bg-high-text/30" />
+                    {/* Arrow */}
+                    <div className="absolute right-4 top-[34px] border-t border-r border-high-text/60 w-2 h-2 rotate-45" />
+                    <div className="relative h-full grid grid-cols-4">
+                      {INNOVATION_STAGES.map((stage, i) => (
+                        <div key={stage.id} className="relative flex flex-col items-center">
+                          {/* Diamond: outer ring + inner fill */}
+                          <div className="absolute top-[2px] w-9 h-9 flex items-center justify-center">
+                            <div className="absolute inset-0 border-2 border-high-text rotate-45" />
+                            <div className="w-[14px] h-[14px] bg-high-text rotate-45" />
                           </div>
-                          <div className="text-[9px] font-mono opacity-40 mt-1 uppercase">PHASE 0{i + 1}</div>
+                          {/* Black label box — sits on line */}
+                          <div className="absolute top-[28px] bg-high-text text-white px-3 py-[5px] text-[11px] font-bold tracking-wide whitespace-nowrap shadow-[2px_2px_0_rgba(0,0,0,0.25)]">
+                            {STAGE_LABEL[stage.id] ?? stage.name}
+                          </div>
+                          {/* Phase text */}
+                          <div className="absolute top-[60px] text-[9px] font-mono opacity-35 tracking-[0.18em] uppercase">
+                            PHASE  0{i + 1}
+                          </div>
                         </div>
-                        <div className="absolute bottom-1/2 mb-6 flex flex-col-reverse gap-3 items-center">
-                          {stagePolicies.slice(0, 4).map((p, idx) => (
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 4-column Kanban lanes */}
+              <div className="flex-1 overflow-hidden grid grid-cols-4 border-t border-high-text/15 mt-2">
+                {INNOVATION_STAGES.map((stage, stageIdx) => {
+                  const stagePolicies = filtered.filter(p => p.innovationStage === stage.id);
+                  return (
+                    <div
+                      key={stage.id}
+                      className={cn(
+                        'flex flex-col overflow-hidden',
+                        stageIdx < INNOVATION_STAGES.length - 1 && 'border-r border-high-text/10',
+                      )}
+                    >
+                      {/* Lane header */}
+                      <div className="px-3 py-1.5 shrink-0 flex items-center justify-between bg-high-muted/40 border-b border-high-text/10">
+                        <span className="text-[8px] font-mono uppercase tracking-widest opacity-40">条目</span>
+                        <span className="text-[11px] font-bold font-mono tabular-nums">{stagePolicies.length}</span>
+                      </div>
+
+                      {/* Scrollable policy list */}
+                      <div className="flex-1 overflow-y-auto no-scrollbar">
+                        {stagePolicies.length === 0 ? (
+                          <div className="py-8 text-center text-[9px] font-mono opacity-20 uppercase tracking-widest">
+                            — empty —
+                          </div>
+                        ) : (
+                          stagePolicies.map((p, idx) => (
                             <motion.div
                               key={p.id}
                               onClick={() => setSelected(p)}
-                              className="w-[180px] p-3 border border-high-text bg-white shadow-[4px_4px_0_rgba(0,0,0,0.15)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer group relative"
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.08 } }}
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.03 } }}
+                              className="px-3 py-2.5 border-b border-high-text/10 cursor-pointer hover:bg-high-text/[0.04] group transition-colors"
                             >
-                              <div className="text-[8px] font-mono opacity-50 mb-1.5 flex justify-between">
-                                <span>{p.date}</span>
-                                <span className="uppercase text-high-accent font-bold">{LEVEL_LABEL[p.level]}</span>
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <span
+                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: DEPT_COLORS[p.department].fill }}
+                                />
+                                <span className="text-[8px] font-mono font-bold opacity-60">{p.iso3 ?? '—'}</span>
+                                <span className="text-[8px] font-mono opacity-25 ml-auto tabular-nums">{p.date.slice(0, 7)}</span>
                               </div>
-                              <div className="font-bold text-xs font-serif leading-tight group-hover:text-high-accent transition-colors line-clamp-3">
+                              <p className="text-[11px] font-serif leading-snug line-clamp-2 group-hover:text-high-accent transition-colors">
                                 {p.title}
+                              </p>
+                              <div className="mt-1.5 flex items-center gap-1.5">
+                                <span className="text-[7px] font-mono uppercase opacity-30">{LEVEL_LABEL[p.level]}</span>
+                                <span className="text-[7px] font-mono opacity-20">·</span>
+                                <span className="text-[7px] font-mono opacity-30">{p.departmentLabel}</span>
                               </div>
-                              {idx === 0 && (
-                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[1px] h-6 bg-high-text/30 group-hover:bg-high-text/60" />
-                              )}
                             </motion.div>
-                          ))}
-                        </div>
+                          ))
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>

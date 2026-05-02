@@ -177,13 +177,13 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden relative">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
           <motion.div
-            key={`${activeModule}-${activeTech}`}
+            key={activeModule}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="flex-1 overflow-hidden"
           >
             {activeModule === 'explorer' && (
