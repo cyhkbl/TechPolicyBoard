@@ -362,62 +362,79 @@ interface SessionMemory {
 
 | 层级 | 选型 | 理由 |
 |------|------|------|
-| **前端框架** | Next.js 15 (App Router) | 可以做纯前端，部署简单 |
+| **前端脚手架** | Vite + React 18 + TypeScript | 比 Next.js 更轻、启动快；加了 FastAPI 后 SSR/Route 优势用不上 |
 | **UI 组件** | Tailwind CSS + shadcn/ui | 快速开发，风格统一 |
 | **可视化** | D3.js + Framer Motion | D3 做数据驱动图表/关联线，Framer 做交互动画 |
 | **图表** | Recharts | 时间轴、柱状图等标准图表 |
 | **状态管理** | Zustand | 轻量，适合多模块联动 + 记忆机制 |
-| **数据存储** | JSON 文件 | 黑客松阶段不需要后端 |
-| **部署** | Vercel | 零配置部署 |
+| **后端** | FastAPI (Python) | 静态数据 API，为以后接 LLM/数据库铺路 |
+| **数据存储** | JSON 文件 (后端读取) | 黑客松阶段先用静态 JSON |
+| **部署** | Vercel (前端) / 任意 VPS (后端) | 前后端分离部署 |
 
 ### 9.2 项目结构
 
 ```
-tech-policy-dashboard/
-├── app/
-│   ├── layout.tsx                # 全局布局
-│   ├── page.tsx                  # 首页：技术选择 + 看板主体
-│   └── globals.css               # 全局样式
-├── components/
-│   ├── Dashboard.tsx             # 看板主容器，管理四个模块切换
-│   ├── TechExplorer/             # 模块一
-│   │   ├── TechDiagram.tsx       # SVG 主图 + 可点击热区
-│   │   ├── ExplodeAnimation.tsx  # hover 爆炸拆解动画
-│   │   ├── KeywordBubble.tsx     # 关键词气泡标签
-│   │   └── TechCard.tsx          # 技术详情卡片（侧边面板）
-│   ├── PolicyTracker/            # 模块二
-│   │   ├── PolicyTimeline.tsx    # 政策时间轴
-│   │   ├── PolicyCard.tsx        # 政策详情卡片
-│   │   ├── DepartmentFilter.tsx  # 三部门筛选器
-│   │   └── PolicyTechLink.tsx    # 政策→技术关联线
-│   ├── IndustryChain/            # 模块三
-│   │   ├── ChainView.tsx         # 产业链视图（横向链条）
-│   │   ├── IndustryBubble.tsx    # 产业词气泡（浮在时间轴上）
-│   │   └── IndustryDetail.tsx    # 产业详情面板
-│   ├── MarketTrends/             # 模块四
-│   │   ├── ReactionTime.tsx      # 政策→市场反应时间
-│   │   ├── CapitalFlow.tsx       # 资本流向图
-│   │   └── IndustryGroup.tsx     # 行业群图（可缩放）
-│   ├── Agent/                    # 底部对话框
-│   │   ├── ChatBar.tsx           # 输入框 + 热词按钮
-│   │   ├── ThinkingProcess.tsx   # 思考过程展示
-│   │   └── MemoryPanel.tsx       # 记忆/历史节点回退
-│   └── shared/
-│       ├── ConnectionLines.tsx   # 模块间关联线（SVG overlay）
-│       ├── ProgressiveReveal.tsx # 渐进式披露通用组件
-│       └── SourceLink.tsx        # 来源链接
-├── data/
-│   ├── technologies.json         # 技术数据
-│   ├── policies.json             # 政策数据
-│   ├── industries.json           # 产业数据
-│   └── hotwords.json             # Agent 热词数据
-├── store/
-│   └── dashboard.ts              # Zustand store（全局状态 + 记忆）
-├── lib/
-│   ├── types.ts                  # TypeScript 类型定义
-│   └── data.ts                   # 数据加载函数
-└── public/
-    └── images/                   # 技术可视化图片资源
+hackathlon/
+├── SPEC.md
+├── frontend/                     # Vite + React + TS
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── tailwind.config.ts
+│   ├── tsconfig.json
+│   ├── package.json
+│   ├── src/
+│   │   ├── main.tsx
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   ├── components/
+│   │   │   ├── Dashboard.tsx             # 看板主容器，管理四个模块切换
+│   │   │   ├── TechExplorer/             # 模块一
+│   │   │   │   ├── TechDiagram.tsx       # SVG 主图 + 可点击热区
+│   │   │   │   ├── ExplodeAnimation.tsx  # hover 爆炸拆解动画
+│   │   │   │   ├── KeywordBubble.tsx     # 关键词气泡标签
+│   │   │   │   └── TechCard.tsx          # 技术详情卡片（侧边面板）
+│   │   │   ├── PolicyTracker/            # 模块二
+│   │   │   │   ├── PolicyTimeline.tsx
+│   │   │   │   ├── PolicyCard.tsx
+│   │   │   │   ├── DepartmentFilter.tsx
+│   │   │   │   └── PolicyTechLink.tsx
+│   │   │   ├── IndustryChain/            # 模块三
+│   │   │   │   ├── ChainView.tsx
+│   │   │   │   ├── IndustryBubble.tsx
+│   │   │   │   └── IndustryDetail.tsx
+│   │   │   ├── MarketTrends/             # 模块四
+│   │   │   │   ├── ReactionTime.tsx
+│   │   │   │   ├── CapitalFlow.tsx
+│   │   │   │   └── IndustryGroup.tsx
+│   │   │   ├── Agent/                    # 底部对话框
+│   │   │   │   ├── ChatBar.tsx
+│   │   │   │   ├── ThinkingProcess.tsx
+│   │   │   │   └── MemoryPanel.tsx
+│   │   │   └── shared/
+│   │   │       ├── ConnectionLines.tsx
+│   │   │       ├── ProgressiveReveal.tsx
+│   │   │       └── SourceLink.tsx
+│   │   ├── store/
+│   │   │   └── dashboard.ts              # Zustand store
+│   │   ├── lib/
+│   │   │   ├── types.ts                  # TypeScript 类型定义
+│   │   │   └── api.ts                    # 调用后端 API 的函数
+│   │   └── assets/
+│   │       └── images/                   # 技术可视化图片资源
+│   └── public/
+├── backend/                      # FastAPI (Python)
+│   ├── requirements.txt
+│   ├── main.py                   # FastAPI 入口
+│   ├── data/
+│   │   ├── technologies.json
+│   │   ├── policies.json
+│   │   ├── industries.json
+│   │   └── hotwords.json
+│   └── routers/
+│       ├── tech.py               # /api/technologies
+│       ├── policy.py             # /api/policies
+│       └── industry.py           # /api/industries
+└── .gitignore
 ```
 
 ### 9.3 关键组件实现思路
