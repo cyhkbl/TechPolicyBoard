@@ -1,0 +1,1820 @@
+import {
+  ChainLayer,
+  FundingEvent,
+  Industry,
+  InnovationStage,
+  Policy,
+  PolicyDepartment,
+  Region,
+  TechnologyData,
+  TechnologyType,
+} from './types';
+
+export const DEPT_COLORS: Record<PolicyDepartment, { fill: string; label: string; twBg: string; twText: string }> = {
+  MoST: { fill: '#2563eb', label: '科技部', twBg: 'bg-blue-600', twText: 'text-blue-700' },
+  MIIT: { fill: '#059669', label: '工信部', twBg: 'bg-emerald-600', twText: 'text-emerald-700' },
+  NDRC: { fill: '#f97316', label: '发改委', twBg: 'bg-orange-500', twText: 'text-orange-600' },
+  International: { fill: '#6b7280', label: '国际', twBg: 'bg-gray-500', twText: 'text-gray-600' },
+};
+
+
+export const TECH_DATA: Record<string, TechnologyData> = {
+  'embodied-ai': {
+    id: 'embodied-ai',
+    name: '具身智能',
+    nameEn: 'Embodied AI',
+    tagline: '让 AI 拥有身体，能在物理世界感知、行动、决策',
+    categories: [
+      {
+        id: 'perception',
+        name: '感知系统',
+        nameEn: 'Perception',
+        subComponents: [
+          {
+            id: 'computer-vision',
+            name: '计算机视觉',
+            shortLabel: '计算机视觉',
+            description: "让机器人通过摄像头识别物体、人脸、场景和空间结构，相当于机器的'眼睛'。",
+            capabilityCan: [
+              '在良好光照下识别常见物体和人脸',
+              '估计物体距离、三维位姿',
+              '结合深度相机做室内 SLAM 建图',
+            ],
+            capabilityCannot: [
+              '完全透明/高反光物体识别',
+              '极暗或烟雾等复杂环境',
+              '未见过品类的可靠零样本识别',
+            ],
+            recentAchievements: [
+              { title: 'Meta SAM 2 实现视频任意物体分割', date: '2024-07', source: 'https://ai.meta.com/sam2/' },
+              { title: '特斯拉 Optimus 纯视觉方案量产迭代', date: '2025-01', source: 'https://www.tesla.com/AI' },
+            ],
+          },
+          {
+            id: 'force-sensor',
+            name: '力觉传感器',
+            shortLabel: '力觉传感',
+            description: "安装在机器人关节或末端的传感器，能感知受力大小和方向，让机器人知道'抓得稳不稳、推得重不重'。",
+            capabilityCan: [
+              '六维力/力矩测量',
+              '精密装配中的柔顺控制',
+              '抓取力度闭环调节',
+            ],
+            capabilityCannot: [
+              '低成本高精度仍难两全',
+              '极小接触力（<0.1N）难稳定测量',
+              '长期使用后零漂需校准',
+            ],
+            recentAchievements: [
+              { title: 'ATI 多轴力传感器用于波士顿动力 Atlas 装配任务', date: '2024-10', source: 'https://www.ati-ia.com/' },
+              { title: '国产宇立仪器六维力传感器出货量翻倍', date: '2025-03', source: 'https://www.sri-instruments.com/' },
+            ],
+          },
+          {
+            id: 'tactile-skin',
+            name: '触觉反馈',
+            shortLabel: '电子皮肤',
+            description: '覆盖在机器人表面的柔性传感阵列，模拟人类皮肤对压力、温度、纹理的感知，是精细操作的关键。',
+            capabilityCan: [
+              '分布式接触点检测',
+              '软物体（布料、水果）抓取',
+              '触觉与视觉融合感知',
+            ],
+            capabilityCannot: [
+              '大面积全身覆盖成本仍高',
+              '抗磨损耐用性不足',
+              '触觉数据标准化尚未形成',
+            ],
+            recentAchievements: [
+              { title: 'MIT CSAIL 发布高分辨率触觉手套', date: '2024-06', source: 'https://www.csail.mit.edu/' },
+              { title: 'Meta Digit 360 开源触觉传感器', date: '2024-11', source: 'https://digit.ml/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'motion',
+        name: '运动控制',
+        nameEn: 'Motion Control',
+        subComponents: [
+          {
+            id: 'servo-motor',
+            name: '伺服电机',
+            shortLabel: '伺服电机',
+            description: "能够精确控制转动角度、速度和扭矩的电机，是机器人关节的'肌肉'。性能直接决定了机器人运动的精度和响应速度。",
+            capabilityCan: [
+              '亚毫米级位置控制精度',
+              '毫秒级响应速度',
+              '一体化关节模组降低集成难度',
+            ],
+            capabilityCannot: [
+              '高扭矩密度与低成本难兼得',
+              '长期满载下发热和寿命问题',
+              '极端环境（高温、强辐射）可靠性不足',
+            ],
+            recentAchievements: [
+              { title: '绿的谐波谐波减速器+伺服一体关节量产', date: '2024-12', source: 'https://www.leaderdrive.com/' },
+              { title: '宇树 H1 使用自研高扭矩关节达成跑步', date: '2024-03', source: 'https://www.unitree.com/' },
+            ],
+          },
+          {
+            id: 'joint-control',
+            name: '关节控制',
+            shortLabel: '关节协调',
+            description: '让机器人多个关节协调运动的算法，保证整体动作既稳又准。人形机器人通常需要同时控制 20–40 个关节。',
+            capabilityCan: [
+              '双足静态/动态平衡',
+              '全身动力学模型预测控制',
+              '模仿学习快速复现人类动作',
+            ],
+            capabilityCannot: [
+              '未知地面的极限鲁棒性',
+              '受冲击后的自恢复',
+              '能耗优化仍显著落后于生物',
+            ],
+            recentAchievements: [
+              { title: '波士顿动力全电动 Atlas 发布', date: '2024-04', source: 'https://bostondynamics.com/' },
+              { title: '宇树 H1 完成室外越野行走测试', date: '2025-02', source: 'https://www.unitree.com/' },
+            ],
+          },
+          {
+            id: 'path-planning',
+            name: '路径规划',
+            shortLabel: '路径规划',
+            description: '计算从起点到目标点的最优移动轨迹，同时避开障碍物。既要考虑几何可行，也要考虑时间、能耗。',
+            capabilityCan: [
+              '静态环境下快速全局规划',
+              '动态避障反应式调整',
+              '与 SLAM 结合的在线重规划',
+            ],
+            capabilityCannot: [
+              '人群密集环境下的社交感知规划',
+              '长时域多目标任务规划',
+              '完全未建图环境下的高速导航',
+            ],
+            recentAchievements: [
+              { title: 'NVIDIA Isaac 发布 cuRobo GPU 加速规划', date: '2024-08', source: 'https://developer.nvidia.com/isaac/' },
+              { title: 'Figure 02 工厂场景实时路径规划落地', date: '2025-01', source: 'https://www.figure.ai/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'cognition',
+        name: '决策智能',
+        nameEn: 'Cognition',
+        subComponents: [
+          {
+            id: 'llm-agent',
+            name: '大语言模型',
+            shortLabel: '大语言模型',
+            description: "像 ChatGPT 一样的大模型装进机器人大脑，让机器人能听懂自然语言指令，并把'把桌上的杯子递给我'拆成一系列可执行动作。",
+            capabilityCan: [
+              '自然语言理解任务指令',
+              '高层任务拆解为子步骤',
+              '多模态输入（图像+语言）',
+            ],
+            capabilityCannot: [
+              '精确物理数值推理仍不稳定',
+              '长时序任务中易遗忘',
+              '端侧部署功耗与时延受限',
+            ],
+            recentAchievements: [
+              { title: 'Google RT-2 视觉-语言-动作模型', date: '2023-07', source: 'https://robotics-transformer2.github.io/' },
+              { title: 'Figure 02 接入 OpenAI 完成家庭场景 Demo', date: '2024-08', source: 'https://www.figure.ai/' },
+            ],
+          },
+          {
+            id: 'reinforcement-learning',
+            name: '强化学习',
+            shortLabel: '强化学习',
+            description: "通过'试错 + 奖励'让机器人自己学会怎么做任务，就像训练小孩骑自行车一样。大量训练在仿真环境中完成，再迁移到真机。",
+            capabilityCan: [
+              '仿真环境中大规模并行训练',
+              'Sim-to-Real 迁移基本可行',
+              '步态、抓取等技能自动习得',
+            ],
+            capabilityCannot: [
+              '高样本效率的真实世界学习',
+              '安全约束下的探索',
+              '奖励函数设计仍高度依赖人工',
+            ],
+            recentAchievements: [
+              { title: 'ETH ANYmal 纯 RL 完成山地徒步', date: '2024-05', source: 'https://rsl.ethz.ch/' },
+              { title: 'NVIDIA GR00T 人形机器人基础模型发布', date: '2024-03', source: 'https://developer.nvidia.com/project-gr00t' },
+            ],
+          },
+          {
+            id: 'world-model',
+            name: '世界模型',
+            shortLabel: '世界模型',
+            description: "机器人大脑里的'物理小宇宙'，它能预测'如果我这样动，物体会怎样运动'，相当于让机器人在脑子里先排练一遍再执行。",
+            capabilityCan: [
+              '短时域物理动力学预测',
+              '视频生成作为可学习仿真器',
+              '作为策略训练的可微环境',
+            ],
+            capabilityCannot: [
+              '长时域精确物理预测',
+              '完全替代传统物理引擎',
+              '与刚体/软体精确接触建模',
+            ],
+            recentAchievements: [
+              { title: 'Google DeepMind Genie 2 交互式世界模型', date: '2024-12', source: 'https://deepmind.google/discover/blog/genie-2-a-large-scale-foundation-world-model/' },
+              { title: 'NVIDIA Cosmos 世界基础模型开放', date: '2025-01', source: 'https://www.nvidia.com/en-us/ai/cosmos/' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  'bci': {
+    id: 'bci',
+    name: '脑机接口',
+    nameEn: 'Brain-Computer Interface',
+    tagline: '在大脑和外部设备之间建立直接的信息通道',
+    categories: [
+      {
+        id: 'perception',
+        name: '信号采集',
+        nameEn: 'Signal Acquisition',
+        subComponents: [
+          {
+            id: 'bci-eeg-cap',
+            name: '脑电帽',
+            shortLabel: '脑电帽',
+            description: '戴在头皮外的电极阵列，不开颅就能记录脑电波，是目前最普及、门槛最低的非侵入式 BCI 入口。',
+            capabilityCan: [
+              '无创采集 8–256 通道脑电信号',
+              '用于注意力/睡眠/癫痫等场景',
+              '可穿戴化，消费级设备已落地',
+            ],
+            capabilityCannot: [
+              '空间分辨率低，只能看到大面积脑区',
+              '易受头发、出汗、动作干扰',
+              '高带宽解码（如打字）带宽不足',
+            ],
+            recentAchievements: [
+              { title: 'OpenBCI Galea 多模态消费级脑电头显发布', date: '2024-05', source: 'https://galea.co/' },
+              { title: '博睿康 NeuSen 256 通道干电极系统量产', date: '2024-09', source: 'https://www.neuracle.cn/' },
+            ],
+          },
+          {
+            id: 'bci-implant',
+            name: '植入式电极',
+            shortLabel: '植入电极',
+            description: '通过手术把微电极阵列植入脑表面或皮层，直接"听见"单个神经元放电，是高精度 BCI 的金标准路径。',
+            capabilityCan: [
+              '单神经元级别信号分辨率',
+              '支持千通道级高带宽脑控',
+              '长期植入（数年）可行性已验证',
+            ],
+            capabilityCannot: [
+              '需要开颅手术，长期免疫反应',
+              '量产封装与医用级良率仍低',
+              '植入寿命与信号衰减待改善',
+            ],
+            recentAchievements: [
+              { title: 'Neuralink 首例人体植入 N1 芯片', date: '2024-01', source: 'https://neuralink.com/' },
+              { title: '脑虎科技 256 通道柔性电极完成临床试验', date: '2024-12', source: 'https://neuroxess.com/' },
+            ],
+          },
+          {
+            id: 'bci-fnirs',
+            name: '近红外光谱',
+            shortLabel: 'fNIRS',
+            description: '用近红外光穿透颅骨测量皮层血氧变化，像给大脑做"光学体检"，抗运动干扰比脑电强，便携性高。',
+            capabilityCan: [
+              '无创、便携、抗运动干扰',
+              '与脑电互补，融合效果更好',
+              '适合儿童、康复场景',
+            ],
+            capabilityCannot: [
+              '时间分辨率秒级，反应较慢',
+              '只能看皮层浅层（2–3 cm）',
+              '成熟度和标准化落后脑电',
+            ],
+            recentAchievements: [
+              { title: 'Kernel Flow 2 头盔便携化产品发布', date: '2023-11', source: 'https://www.kernel.com/' },
+              { title: '慧创医疗便携 fNIRS 用于康复医院推广', date: '2024-08', source: 'https://www.huichuangyiliao.com/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'motion',
+        name: '信号解码',
+        nameEn: 'Neural Decoding',
+        subComponents: [
+          {
+            id: 'bci-dl-decoder',
+            name: '深度学习解码',
+            shortLabel: '深度解码',
+            description: '用神经网络把杂乱的脑信号翻译成光标、按键、文字或动作，相当于给大脑信号做"同声传译"。',
+            capabilityCan: [
+              '端到端从原始信号映射到动作',
+              '小样本迁移学习降低定标时间',
+              '多模态融合提升解码鲁棒性',
+            ],
+            capabilityCannot: [
+              '依赖个体定标，跨人泛化弱',
+              '长时间漂移需持续在线更新',
+              '模型可解释性与监管要求冲突',
+            ],
+            recentAchievements: [
+              { title: 'UCSF BrainGate 每分钟 62 词脑控打字', date: '2023-08', source: 'https://www.nature.com/articles/s41586-023-06443-4' },
+              { title: 'Neuralink 受试者脑控完成国际象棋对弈', date: '2024-03', source: 'https://neuralink.com/' },
+            ],
+          },
+          {
+            id: 'bci-motor-intent',
+            name: '运动意图识别',
+            shortLabel: '运动意图',
+            description: '识别用户"想要动"的念头并转成机械动作，让瘫痪患者用意念控制机械臂、轮椅、计算机光标。',
+            capabilityCan: [
+              '高自由度光标/机械臂控制',
+              '抓握、点按等精细动作模拟',
+              '临床试验完成灵巧手操作',
+            ],
+            capabilityCannot: [
+              '长时使用疲劳度高',
+              '复杂自然动作仍显迟钝',
+              '家庭场景稳定性待验证',
+            ],
+            recentAchievements: [
+              { title: 'BrainGate 用户实现脑控机械臂自助进食', date: '2023-10', source: 'https://www.braingate.org/' },
+              { title: '清华团队"北脑一号"完成三例患者脑控手机', date: '2025-01', source: 'https://www.tsinghua.edu.cn/' },
+            ],
+          },
+          {
+            id: 'bci-speech-decode',
+            name: '语音解码',
+            shortLabel: '语音解码',
+            description: '从大脑信号中直接重建想说的话，让失语患者即使发不出声也能把内心的句子"投屏"到屏幕或合成语音。',
+            capabilityCan: [
+              '>60 词/分钟脑控文字输出',
+              '声码合成重现个人音色',
+              '无声默读场景初步可用',
+            ],
+            capabilityCannot: [
+              '词汇表仍受限，开放领域困难',
+              '植入密度要求高',
+              '多语种泛化仍处早期',
+            ],
+            recentAchievements: [
+              { title: 'UCSF 团队植入式语音 BCI 合成用户声音', date: '2023-08', source: 'https://www.ucsf.edu/' },
+              { title: 'Meta/FAIR 非侵入语音解码取得新基准', date: '2024-05', source: 'https://ai.meta.com/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'cognition',
+        name: '刺激调控',
+        nameEn: 'Neuromodulation',
+        subComponents: [
+          {
+            id: 'bci-tms',
+            name: '经颅磁刺激',
+            shortLabel: 'TMS',
+            description: '用磁场无创激活或抑制特定脑区，像给大脑做"物理理疗"，已成抑郁症、卒中康复的临床工具。',
+            capabilityCan: [
+              '无创、门诊可做',
+              '抑郁症、卒中康复临床获批',
+              '与脑电融合实现闭环治疗',
+            ],
+            capabilityCannot: [
+              '空间聚焦度有限',
+              '深部脑区难以精准刺激',
+              '个体差异大，方案仍靠医生经验',
+            ],
+            recentAchievements: [
+              { title: 'Magstim Theta Burst 新疗程获 FDA 扩展批准', date: '2024-02', source: 'https://www.magstim.com/' },
+              { title: '国产依瑞德 TMS 进入医保目录', date: '2024-07', source: 'https://www.yrdyiliao.com/' },
+            ],
+          },
+          {
+            id: 'bci-closed-loop',
+            name: '闭环神经反馈',
+            shortLabel: '闭环反馈',
+            description: '一边读取脑信号一边自动调节刺激参数，像大脑的"恒温空调"，已用于癫痫发作预警和帕金森症状控制。',
+            capabilityCan: [
+              '实时监测+按需刺激',
+              '癫痫、帕金森适应性调控',
+              '比开环刺激能耗和副作用更低',
+            ],
+            capabilityCannot: [
+              '算法验证周期极长',
+              '植入设备电池寿命受限',
+              '跨病种通用平台尚未形成',
+            ],
+            recentAchievements: [
+              { title: 'Medtronic Percept 闭环 DBS 大规模商用', date: '2023-06', source: 'https://www.medtronic.com/' },
+              { title: 'NeuroPace RNS 用于重度抑郁适应症扩展', date: '2024-10', source: 'https://www.neuropace.com/' },
+            ],
+          },
+          {
+            id: 'bci-optogenetics',
+            name: '光遗传调控',
+            shortLabel: '光遗传',
+            description: '把光敏蛋白基因导入特定神经元，再用光开关精准控制它们兴奋或抑制，是基础研究里最精细的神经操作工具。',
+            capabilityCan: [
+              '细胞类型级精准控制',
+              '毫秒级时间分辨率',
+              '为 BCI 机制研究提供金标准',
+            ],
+            capabilityCannot: [
+              '临床使用尚在早期人体试验',
+              '需基因改造，伦理门槛高',
+              '深部脑区光传递挑战大',
+            ],
+            recentAchievements: [
+              { title: 'GenSight Biologics 光遗传视力恢复 III 期', date: '2024-04', source: 'https://www.gensight-biologics.com/' },
+              { title: '中科院神经所非人灵长类光遗传平台升级', date: '2024-09', source: 'https://www.ion.ac.cn/' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  'quantum': {
+    id: 'quantum',
+    name: '量子计算',
+    nameEn: 'Quantum Computing',
+    tagline: '用量子叠加和纠缠并行处理经典计算机难以求解的问题',
+    categories: [
+      {
+        id: 'perception',
+        name: '量子硬件',
+        nameEn: 'Quantum Hardware',
+        subComponents: [
+          {
+            id: 'q-superconducting',
+            name: '超导量子比特',
+            shortLabel: '超导比特',
+            description: '把超导电路冷却到接近绝对零度，用电流的两个量子态当作 0 和 1，是目前工业界主流的量子硬件路线。',
+            capabilityCan: [
+              '千比特级规模集成',
+              '门操作速度快（ns 级）',
+              '与半导体工艺基本兼容',
+            ],
+            capabilityCannot: [
+              '需要 mK 级稀释制冷机',
+              '比特相干时间仅百微秒级',
+              '布线、串扰制约继续放大',
+            ],
+            recentAchievements: [
+              { title: 'IBM Condor 1121 比特处理器发布', date: '2023-12', source: 'https://research.ibm.com/blog/quantum-roadmap-2033' },
+              { title: '本源悟空 72 比特超导量子计算机上线', date: '2024-01', source: 'https://quantum.originqc.com.cn/' },
+            ],
+          },
+          {
+            id: 'q-ion-trap',
+            name: '离子阱',
+            shortLabel: '离子阱',
+            description: '用电磁场把单个带电原子悬浮在真空里做量子比特，保真度极高，但规模化速度较慢。',
+            capabilityCan: [
+              '量子门保真度业界领先（>99.9%）',
+              '全连接拓扑利于算法实现',
+              '室温环境友好',
+            ],
+            capabilityCannot: [
+              '门速较慢（μs 级）',
+              '激光、真空系统集成复杂',
+              '百比特以上规模化仍困难',
+            ],
+            recentAchievements: [
+              { title: 'Quantinuum H2 全连接 56 比特系统上线', date: '2024-06', source: 'https://www.quantinuum.com/' },
+              { title: 'IonQ Forte Enterprise 商用版本发布', date: '2024-10', source: 'https://ionq.com/' },
+            ],
+          },
+          {
+            id: 'q-photonic',
+            name: '光量子',
+            shortLabel: '光量子',
+            description: '用单光子作为量子比特，天然抗环境噪声，在量子通信和专用采样任务上最先展示"量子优越性"。',
+            capabilityCan: [
+              '室温运行，无需制冷',
+              '易与光纤/通信网络互联',
+              '专用采样任务已证优越性',
+            ],
+            capabilityCannot: [
+              '通用量子计算架构仍在探索',
+              '片上大规模集成工艺难度高',
+              '量子门操控效率待提升',
+            ],
+            recentAchievements: [
+              { title: 'PsiQuantum 宣布硅基光量子百万比特路线图', date: '2024-03', source: 'https://www.psiquantum.com/' },
+              { title: '九章三号 255 光子采样实验', date: '2023-10', source: 'https://www.ustc.edu.cn/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'motion',
+        name: '量子软件',
+        nameEn: 'Quantum Software',
+        subComponents: [
+          {
+            id: 'q-algorithm',
+            name: '量子算法',
+            shortLabel: '量子算法',
+            description: '专门为量子计算机设计的"解题方法"，比如 Shor 分解大数、Grover 搜索，是量子计算存在意义的核心。',
+            capabilityCan: [
+              '特定问题理论指数级加速',
+              '组合优化、化学模拟已有实用原型',
+              '变分量子算法可用于 NISQ',
+            ],
+            capabilityCannot: [
+              '通用加速场景仍有限',
+              '噪声下理论加速常被抵消',
+              '算法-硬件协同设计尚不成熟',
+            ],
+            recentAchievements: [
+              { title: 'Google Willow 芯片演示量子纠错阈值突破', date: '2024-12', source: 'https://blog.google/technology/research/google-willow-quantum-chip/' },
+              { title: 'Quantinuum + Microsoft 逻辑比特错误率创新低', date: '2024-04', source: 'https://www.microsoft.com/' },
+            ],
+          },
+          {
+            id: 'q-error-correction',
+            name: '量子纠错',
+            shortLabel: '量子纠错',
+            description: '把若干脆弱的物理量子比特合成为一个更稳定的"逻辑比特"，是通用量子计算机能否实用化的决定性技术。',
+            capabilityCan: [
+              '小规模表面码纠错已实验验证',
+              '逻辑错误率低于物理比特',
+              '纠错开销理论上可收敛',
+            ],
+            capabilityCannot: [
+              '百万级物理比特规模化尚远',
+              '实时解码延迟与带宽瓶颈',
+              '逻辑门级纠错仍处研究期',
+            ],
+            recentAchievements: [
+              { title: 'Google Willow 首次演示增加比特反而降错', date: '2024-12', source: 'https://blog.google/' },
+              { title: 'Harvard/QuEra 中性原子 48 逻辑比特实验', date: '2023-12', source: 'https://www.quera.com/' },
+            ],
+          },
+          {
+            id: 'q-programming',
+            name: '量子编程语言',
+            shortLabel: '编程语言',
+            description: '让普通开发者也能写量子程序的工具链，如 Qiskit、Cirq、OriginQ 的本源语言，提供电路描述、模拟、编译等能力。',
+            capabilityCan: [
+              '主流语言 SDK 已开源',
+              '电路模拟器支持 30+ 比特',
+              '与经典-量子混合工作流打通',
+            ],
+            capabilityCannot: [
+              '跨平台代码可移植性差',
+              '调试工具链相对经典计算落后',
+              '企业级工程规范尚未形成',
+            ],
+            recentAchievements: [
+              { title: 'IBM Qiskit 1.0 发布并稳定 API', date: '2024-02', source: 'https://www.ibm.com/quantum/qiskit' },
+              { title: '本源 QPanda 2 开源量子开发套件发布', date: '2024-08', source: 'https://qpanda.originqc.com.cn/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'cognition',
+        name: '量子应用',
+        nameEn: 'Quantum Applications',
+        subComponents: [
+          {
+            id: 'q-simulation',
+            name: '量子模拟',
+            shortLabel: '量子模拟',
+            description: '用量子计算机模拟分子、材料、金融系统的量子行为，是量子计算机最可能率先商用的方向。',
+            capabilityCan: [
+              '小分子基态能量计算可行',
+              '关联电子体系模拟优势显现',
+              '已与药企、材料企业合作试点',
+            ],
+            capabilityCannot: [
+              '工业级精度仍需纠错量子机',
+              '经典 HPC 近似方法持续追赶',
+              '端到端工作流成本高',
+            ],
+            recentAchievements: [
+              { title: 'IBM + Cleveland Clinic 医疗 QPU 上线', date: '2023-04', source: 'https://www.ibm.com/' },
+              { title: 'Pasqal 与 Saudi Aramco 化学模拟合作', date: '2024-07', source: 'https://www.pasqal.com/' },
+            ],
+          },
+          {
+            id: 'q-optimization',
+            name: '量子优化',
+            shortLabel: '量子优化',
+            description: '用量子退火或变分算法求解物流、金融、排班等组合优化问题，是近期商业落地最热的方向。',
+            capabilityCan: [
+              '量子退火机已大规模商用',
+              '变分算法在 NISQ 机上跑通',
+              '与经典求解器混合提效案例增多',
+            ],
+            capabilityCannot: [
+              '对大多数问题尚无理论加速证明',
+              '工业级基准仍有争议',
+              '对问题建模要求高',
+            ],
+            recentAchievements: [
+              { title: 'D-Wave Advantage2 Prototype 发布', date: '2024-05', source: 'https://www.dwavesys.com/' },
+              { title: '玻色量子相干伊辛机交付金融机构', date: '2024-09', source: 'https://www.boseq.com/' },
+            ],
+          },
+          {
+            id: 'q-crypto',
+            name: '量子密码',
+            shortLabel: '量子密码',
+            description: '既包括利用量子不可克隆原理做密钥分发（QKD），也包括抗量子攻击的后量子密码（PQC），关系未来通信安全。',
+            capabilityCan: [
+              'QKD 城域骨干网已部署',
+              'PQC 算法完成 NIST 标准化',
+              '卫星 QKD 完成工程验证',
+            ],
+            capabilityCannot: [
+              'QKD 终端成本仍高',
+              '长距离中继依赖可信节点',
+              'PQC 大规模替换需多年迁移',
+            ],
+            recentAchievements: [
+              { title: 'NIST 正式发布 3 套 PQC 标准算法', date: '2024-08', source: 'https://www.nist.gov/' },
+              { title: '中国"济南一号"QKD 卫星在轨运行', date: '2023-07', source: 'https://www.ustc.edu.cn/' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  'fusion': {
+    id: 'fusion',
+    name: '核聚变',
+    nameEn: 'Nuclear Fusion',
+    tagline: '让地球上重现太阳里的能量过程，提供几乎无限的清洁电力',
+    categories: [
+      {
+        id: 'perception',
+        name: '等离子体约束',
+        nameEn: 'Plasma Confinement',
+        subComponents: [
+          {
+            id: 'f-tokamak',
+            name: '托卡马克',
+            shortLabel: '托卡马克',
+            description: '用强磁场把 1 亿度以上的等离子体约束在甜甜圈形状的真空室内，是目前最接近商业化的聚变路线。',
+            capabilityCan: [
+              '稳态高约束模式（H-mode）已常态化',
+              '百秒级高性能放电已实现',
+              'ITER、CFETR 等项目推进中',
+            ],
+            capabilityCannot: [
+              'Q>1 净能量持续输出尚未实现',
+              '第一壁与偏滤器寿命不够',
+              '稳态运行稳定性挑战大',
+            ],
+            recentAchievements: [
+              { title: 'EAST 装置 403 秒稳态高约束运行破纪录', date: '2023-04', source: 'https://www.hf.cas.cn/' },
+              { title: 'ITER 首等离子体时间推迟至 2035 前后', date: '2024-07', source: 'https://www.iter.org/' },
+            ],
+          },
+          {
+            id: 'f-stellarator',
+            name: '仿星器',
+            shortLabel: '仿星器',
+            description: '把磁场线圈绕成复杂三维形状来约束等离子体，不依赖电流，天然更适合稳态运行，但工程难度极高。',
+            capabilityCan: [
+              '等离子体稳态运行天然优势',
+              '避免电流驱动不稳定性',
+              '小型商业化装置开始涌现',
+            ],
+            capabilityCannot: [
+              '三维线圈制造与精度要求苛刻',
+              '诊断与加热系统布局复杂',
+              'Q>1 尚未实现',
+            ],
+            recentAchievements: [
+              { title: 'Wendelstein 7-X 8 分钟稳态高密度运行', date: '2023-02', source: 'https://www.ipp.mpg.de/' },
+              { title: 'Type One Energy B 轮融资加码商用仿星器', date: '2024-09', source: 'https://www.typeoneenergy.com/' },
+            ],
+          },
+          {
+            id: 'f-inertial',
+            name: '惯性约束',
+            shortLabel: '惯性约束',
+            description: '用超高能激光从各个方向瞬间压缩燃料靶丸，在微秒内完成聚变放能，2022 年首次实现"点火"。',
+            capabilityCan: [
+              '2022 年人类首次实现靶丸净能量增益',
+              '诊断数据对武器物理意义重大',
+              '重复频率激光驱动快速进步',
+            ],
+            capabilityCannot: [
+              '单发能耗高，能量回收率低',
+              '商用电站级重频仍为瓶颈',
+              '靶丸量产与供料体系尚未建立',
+            ],
+            recentAchievements: [
+              { title: 'NIF 宣布 1.5 倍点火能量增益新记录', date: '2023-12', source: 'https://lasers.llnl.gov/' },
+              { title: 'Focused Energy 与德国政府合作推进 IFE', date: '2024-06', source: 'https://focused-energy.world/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'motion',
+        name: '材料与工程',
+        nameEn: 'Materials & Engineering',
+        subComponents: [
+          {
+            id: 'f-first-wall',
+            name: '第一壁材料',
+            shortLabel: '第一壁',
+            description: '直接面对上亿度等离子体和高能中子的内壁材料，决定了聚变堆寿命和安全性，是最硬的工程卡脖子点之一。',
+            capabilityCan: [
+              '钨基材料实验堆已常态应用',
+              '碳化硅复合材料开始试用',
+              '等离子体-壁相互作用物理模型成熟',
+            ],
+            capabilityCannot: [
+              '中子辐照寿命仍短（<FPY）',
+              '大规模制造工艺还在验证',
+              '氚滞留问题未完全解决',
+            ],
+            recentAchievements: [
+              { title: 'ITER 完成钨基偏滤器首批到货', date: '2024-03', source: 'https://www.iter.org/' },
+              { title: '核工业西南物理研究院 SiCf/SiC 包层样件交付', date: '2024-11', source: 'https://www.swip.ac.cn/' },
+            ],
+          },
+          {
+            id: 'f-tritium',
+            name: '氚增殖',
+            shortLabel: '氚增殖',
+            description: '聚变反应消耗氚，但自然界几乎没有氚，必须在反应堆包层里用锂自己"生"出氚，是商用堆闭环的关键。',
+            capabilityCan: [
+              '固态和液态包层方案并行发展',
+              '氚回收工艺走出实验室',
+              '国际协同建立氚供应链规划',
+            ],
+            capabilityCannot: [
+              '产氚比（TBR>1.0）尚未工程验证',
+              '氚安全监管体系仍在完善',
+              '氚存储、运输成本高',
+            ],
+            recentAchievements: [
+              { title: 'ITER TBM 中国包层模块设计评审通过', date: '2024-05', source: 'https://www.iter.org/' },
+              { title: 'Kyoto Fusioneering 液态锂铅包层试验装置运行', date: '2024-09', source: 'https://kyotofusioneering.com/' },
+            ],
+          },
+          {
+            id: 'f-magnet',
+            name: '超导磁体',
+            shortLabel: '超导磁体',
+            description: '产生强磁场约束等离子体的核心部件，新一代高温超导带材正把聚变装置体积和成本推入商业可行区间。',
+            capabilityCan: [
+              '高温超导 REBCO 带材百公里级量产',
+              '20T 以上磁场工程验证',
+              '紧凑型聚变装置路线依赖此技术',
+            ],
+            capabilityCannot: [
+              '带材均匀性、制冷系统成本仍高',
+              '长期辐照与循环载荷数据不足',
+              '国产高温超导带材良率有差距',
+            ],
+            recentAchievements: [
+              { title: 'Commonwealth Fusion SPARC 首个 TF 线圈通过测试', date: '2023-09', source: 'https://cfs.energy/' },
+              { title: '上海超导 REBCO 带材出货突破 1000 km', date: '2024-10', source: 'https://www.shsctec.com/' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'cognition',
+        name: '能量转换',
+        nameEn: 'Energy Conversion',
+        subComponents: [
+          {
+            id: 'f-heat-capture',
+            name: '热能收集',
+            shortLabel: '热能收集',
+            description: '把聚变产生的巨量中子动能转化为热能、再通过常规汽轮机发电，是最成熟但效率受限的路径。',
+            capabilityCan: [
+              '沿用火电/核电汽轮机技术',
+              '与氚增殖包层协同设计',
+              '工程可行性最高',
+            ],
+            capabilityCannot: [
+              '热电转换效率 30–40% 上限',
+              '高温材料可靠性挑战大',
+              '整体热力循环尚未在聚变堆验证',
+            ],
+            recentAchievements: [
+              { title: 'UKAEA STEP 概念设计确认朗肯循环方案', date: '2024-02', source: 'https://step.ukaea.uk/' },
+              { title: '中国 CFETR 热工水力实验平台投运', date: '2023-11', source: 'https://www.hf.cas.cn/' },
+            ],
+          },
+          {
+            id: 'f-direct-conversion',
+            name: '直接能量转换',
+            shortLabel: '直接转换',
+            description: '跳过蒸汽循环，直接把带电粒子动能转成电流，可把效率推到 60% 以上，是长期目标，工程难度极高。',
+            capabilityCan: [
+              '理论效率上限远高于热循环',
+              '适合先进燃料（p-B11）路线',
+              '原理级实验多次验证',
+            ],
+            capabilityCannot: [
+              '工程级大功率样机空白',
+              '强磁场高能粒子收集难度大',
+              '尚无商业聚变堆设计采用',
+            ],
+            recentAchievements: [
+              { title: 'TAE Technologies Copernicus 装置设计定稿', date: '2024-05', source: 'https://tae.com/' },
+              { title: 'HB11 Energy 演示 p-B11 反应产额提升', date: '2023-04', source: 'https://hb11.energy/' },
+            ],
+          },
+          {
+            id: 'f-neutron-shield',
+            name: '中子屏蔽',
+            shortLabel: '中子屏蔽',
+            description: '聚变反应放出大量高能中子，必须用特制材料层层屏蔽，保护磁体、电子和人员，是安全核心部件。',
+            capabilityCan: [
+              '水冷/硼化混凝土方案成熟',
+              '新型氢化物屏蔽密度更高',
+              '与生物屏蔽一体化设计能力提升',
+            ],
+            capabilityCannot: [
+              '紧凑装置内部空间极为有限',
+              '长期辐照下性能衰减待验证',
+              '成本占比仍较高',
+            ],
+            recentAchievements: [
+              { title: 'UKAEA 发布高性能氢化物中子屏蔽样品', date: '2023-10', source: 'https://www.gov.uk/ukaea' },
+              { title: 'SPARC 紧凑屏蔽层工程设计定型', date: '2024-08', source: 'https://cfs.energy/' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+};
+
+export const POLICY_DATA: Policy[] = [
+  {
+    id: '14fyp-outline',
+    title: '十四五规划纲要（数字经济与科技自立自强）',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2021-03',
+    summary: '将科技自立自强列为国家战略支撑，首次把数字经济写入国家五年规划，明确人工智能、量子信息、生物技术等前沿领域布局。',
+    fullTextUrl: 'https://www.ndrc.gov.cn/xxgk/jd/jd/202103/t20210323_1270117.html',
+    relatedTechnologies: ['computer-vision', 'reinforcement-learning', 'world-model'],
+    relatedIndustries: ['compute-grid', 'humanoid-robot', 'bio-medicine'],
+    marketReactionDays: 14,
+  },
+  {
+    id: 'east-data-west-compute',
+    title: '东数西算工程全面启动',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2022-02',
+    summary: '八大枢纽、十大集群全面启动，东部数据算力需求导向西部，形成全国一体化算力网络，为 AI 训练、云服务奠定底层基础设施。',
+    fullTextUrl: 'https://www.ndrc.gov.cn/xxgk/zcfb/tz/202202/t20220217_1315309.html',
+    relatedTechnologies: ['reinforcement-learning', 'world-model'],
+    relatedIndustries: ['compute-grid'],
+    marketReactionDays: 5,
+  },
+  {
+    id: 'chips-act',
+    title: '美国《芯片与科学法案》（CHIPS Act）',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2022-08',
+    summary: '美国联邦拨款 520 亿美元支持本土半导体制造与研发，并对先进制程设备出口实施更严格的管制，深刻影响全球算力产业链格局。',
+    fullTextUrl: 'https://www.congress.gov/bill/117th-congress/house-bill/4346',
+    relatedTechnologies: ['computer-vision', 'reinforcement-learning'],
+    relatedIndustries: ['compute-grid', 'humanoid-robot'],
+    marketReactionDays: 3,
+  },
+  {
+    id: 'humanoid-robot-guidance',
+    title: '工信部《人形机器人创新发展指导意见》',
+    country: '中国',
+    department: 'MIIT',
+    departmentLabel: '工信部',
+    level: 'ministerial',
+    date: '2023-10',
+    summary: '首次把人形机器人列为颠覆性产品，明确 2025 年初步建立创新体系、2027 年进入全球第一梯队，重点突破大脑、小脑、肢体等关键部件。',
+    fullTextUrl: 'https://www.miit.gov.cn/',
+    relatedTechnologies: ['joint-control', 'servo-motor', 'computer-vision', 'reinforcement-learning'],
+    relatedIndustries: ['humanoid-robot'],
+    marketReactionDays: 7,
+  },
+  {
+    id: 'us-ai-eo',
+    title: '美国《关于安全、可靠、可信人工智能的行政令》',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2023-10',
+    summary: '拜登政府针对前沿大模型设立算力阈值报告义务，要求大模型训练方向政府披露安全测试，成为全球 AI 监管的重要参照。',
+    fullTextUrl: 'https://www.whitehouse.gov/briefing-room/presidential-actions/2023/10/30/executive-order-on-the-safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence/',
+    relatedTechnologies: ['llm-agent', 'world-model'],
+    relatedIndustries: ['compute-grid'],
+    marketReactionDays: 1,
+  },
+  {
+    id: 'new-industrialization',
+    title: '工信部《推进新型工业化部署》',
+    country: '中国',
+    department: 'MIIT',
+    departmentLabel: '工信部',
+    level: 'ministerial',
+    date: '2024-03',
+    summary: '把智能制造、工业母机、工业软件与人形机器人并列为新型工业化的主攻方向，强调产业链补短板、锻长板，打造一批智能工厂与先进产业集群。',
+    fullTextUrl: 'https://www.miit.gov.cn/',
+    relatedTechnologies: ['servo-motor', 'joint-control', 'path-planning'],
+    relatedIndustries: ['humanoid-robot', 'compute-grid'],
+    marketReactionDays: 10,
+  },
+  {
+    id: 'most-embodied-ai',
+    title: '科技部《具身智能重点研发专项》',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2024-07',
+    summary: '面向具身智能设立国家重点研发计划专项，聚焦多模态大模型、世界模型、仿真到真机迁移等基础科学问题，支持高校与国家实验室联合攻关。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['llm-agent', 'reinforcement-learning', 'world-model', 'computer-vision'],
+    relatedIndustries: ['humanoid-robot'],
+    marketReactionDays: 20,
+  },
+  {
+    id: 'most-quantum',
+    title: '科技部《量子科技研发专项》',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2024-11',
+    summary: '加码量子计算、量子通信、量子测量三条技术路线的基础科研投入，组建国家实验室群落，明确 2030 年实现若干关键节点性突破。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['q-superconducting', 'q-error-correction', 'q-algorithm', 'q-crypto'],
+    relatedIndustries: ['compute-grid', 'quantum-computing-industry'],
+    marketReactionDays: 30,
+  },
+  {
+    id: '15fyp-proposal',
+    title: '十五五规划建议（二十届四中全会）',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2025-10',
+    summary: '明确把具身智能、量子科技、商业航天、生物制造列为战略性新兴产业重点培育方向，提出建设统一算力网、健全新型举国体制。',
+    fullTextUrl: 'https://www.gov.cn/',
+    relatedTechnologies: ['llm-agent', 'reinforcement-learning', 'world-model', 'joint-control'],
+    relatedIndustries: ['compute-grid', 'humanoid-robot', 'bio-medicine'],
+    marketReactionDays: 2,
+  },
+  {
+    id: 'central-economic-2025',
+    title: '2025 年中央经济工作会议',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2025-12',
+    summary: '把发展新质生产力列为 2026 年重点任务，明确要以科技创新推动产业创新，强调 AI+、低空经济、具身智能、生物制造的标志性应用落地。',
+    fullTextUrl: 'https://www.gov.cn/',
+    relatedTechnologies: ['llm-agent', 'joint-control', 'reinforcement-learning'],
+    relatedIndustries: ['humanoid-robot', 'bio-medicine', 'compute-grid'],
+    marketReactionDays: 1,
+  },
+  {
+    id: 'brain-14fyp',
+    title: '科技部《科技创新 2030·脑科学与类脑研究》',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2021-09',
+    summary: '被称为"中国脑计划"的重大科技专项正式立项，聚焦脑认知、类脑智能、脑机接口与脑疾病四大方向，投入规模达百亿级。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['bci-eeg-cap', 'bci-implant', 'bci-dl-decoder', 'bci-tms'],
+    relatedIndustries: ['neural-prosthetics'],
+    marketReactionDays: 45,
+  },
+  {
+    id: 'most-bci-2023',
+    title: '科技部《脑机接口与智能健康》重点研发专项',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2023-06',
+    summary: '在十四五框架下单列脑机接口专项，支持高精度电极、解码算法、闭环调控等关键技术攻关，鼓励产学研医协同。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['bci-implant', 'bci-dl-decoder', 'bci-motor-intent', 'bci-closed-loop'],
+    relatedIndustries: ['neural-prosthetics'],
+    marketReactionDays: 21,
+  },
+  {
+    id: 'us-brain-init-2-0',
+    title: '美国《BRAIN Initiative 2.0》升级方案',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2023-04',
+    summary: 'NIH 在原 BRAIN 计划基础上追加 5 亿美元/年投入，新增 CONNECTS、Armamentarium 等子项目，聚焦神经环路图谱与新一代神经技术。',
+    fullTextUrl: 'https://braininitiative.nih.gov/',
+    relatedTechnologies: ['bci-implant', 'bci-optogenetics', 'bci-closed-loop'],
+    relatedIndustries: ['neural-prosthetics'],
+    marketReactionDays: 14,
+  },
+  {
+    id: 'miit-bci-standard-2024',
+    title: '工信部《脑机接口产业标准体系建设指南》',
+    country: '中国',
+    department: 'MIIT',
+    departmentLabel: '工信部',
+    level: 'ministerial',
+    date: '2024-10',
+    summary: '首次出台脑机接口产业标准框架，覆盖电极、信号处理、数据安全、临床评价等维度，为医疗器械审批和产业化落地铺路。',
+    fullTextUrl: 'https://www.miit.gov.cn/',
+    relatedTechnologies: ['bci-implant', 'bci-eeg-cap', 'bci-dl-decoder'],
+    relatedIndustries: ['neural-prosthetics'],
+    marketReactionDays: 7,
+  },
+  {
+    id: 'quantum-14fyp',
+    title: '十四五《量子信息》重大科技专项',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2021-12',
+    summary: '在科技创新 2030 框架下启动量子信息专项，系统部署量子计算、通信、测量，组建合肥、上海、北京三大国家量子实验室群。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['q-superconducting', 'q-photonic', 'q-crypto'],
+    relatedIndustries: ['quantum-computing-industry'],
+    marketReactionDays: 30,
+  },
+  {
+    id: 'us-nqi-reauth-2024',
+    title: '美国《国家量子倡议再授权法案》（NQI Reauthorization）',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2024-05',
+    summary: '延续并扩大 2018 年 NQI Act，授权 27 亿美元用于量子研发，新增量子网络、量子传感试验台与量子人才培养，强化对华竞争。',
+    fullTextUrl: 'https://www.congress.gov/bill/118th-congress/house-bill/6213',
+    relatedTechnologies: ['q-superconducting', 'q-ion-trap', 'q-algorithm', 'q-crypto'],
+    relatedIndustries: ['quantum-computing-industry'],
+    marketReactionDays: 5,
+  },
+  {
+    id: 'eu-quantum-chips-act',
+    title: '欧盟《量子旗舰计划第二阶段 & Chips Act》',
+    country: '欧盟',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2023-09',
+    summary: '欧盟在量子旗舰基础上叠加 Chips Act，计划投入 70 亿欧元，建立量子云试验平台，目标 2030 年之前部署欧洲自主量子计算机集群。',
+    fullTextUrl: 'https://qt.eu/',
+    relatedTechnologies: ['q-superconducting', 'q-ion-trap', 'q-programming'],
+    relatedIndustries: ['quantum-computing-industry'],
+    marketReactionDays: 10,
+  },
+  {
+    id: 'most-fusion-2022',
+    title: '科技部《聚变能源重点研发专项》',
+    country: '中国',
+    department: 'MoST',
+    departmentLabel: '科技部',
+    level: 'ministerial',
+    date: '2022-11',
+    summary: '在十四五重点研发计划框架下单列聚变能源专项，重点支持高性能等离子体、第一壁材料、高温超导磁体与氚燃料闭环。',
+    fullTextUrl: 'https://www.most.gov.cn/',
+    relatedTechnologies: ['f-tokamak', 'f-first-wall', 'f-magnet', 'f-tritium'],
+    relatedIndustries: ['fusion-energy'],
+    marketReactionDays: 40,
+  },
+  {
+    id: 'iter-schedule-2024',
+    title: 'ITER 新基线时间表调整',
+    country: '国际',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2024-07',
+    summary: 'ITER 组织宣布首等离子体推迟至 2035 前后，转为分阶段目标，中国贡献磁体馈线、电源等核心部件，带动国内聚变工程能力提升。',
+    fullTextUrl: 'https://www.iter.org/',
+    relatedTechnologies: ['f-tokamak', 'f-magnet', 'f-first-wall'],
+    relatedIndustries: ['fusion-energy'],
+    marketReactionDays: 14,
+  },
+  {
+    id: 'us-doe-bold-fusion',
+    title: '美国能源部《Bold Decadal Vision for Commercial Fusion》',
+    country: '美国',
+    department: 'International',
+    departmentLabel: '国际',
+    level: 'national',
+    date: '2022-03',
+    summary: 'DOE 联合白宫发布十年内建成商业聚变示范堆的路线图，推出 Milestone-Based 投资机制，引爆 CFS、TAE 等一批商业聚变公司融资热潮。',
+    fullTextUrl: 'https://www.energy.gov/science/articles/us-department-energy-announces-bold-decadal-vision-commercial-fusion-energy',
+    relatedTechnologies: ['f-tokamak', 'f-inertial', 'f-magnet', 'f-direct-conversion'],
+    relatedIndustries: ['fusion-energy'],
+    marketReactionDays: 2,
+  },
+  {
+    id: '15fyp-energy-fusion',
+    title: '十五五《能源规划》聚变示范工程布局',
+    country: '中国',
+    department: 'NDRC',
+    departmentLabel: '发改委',
+    level: 'national',
+    date: '2025-11',
+    summary: '首次把聚变能源写入国家能源五年规划，提出在 2030 年前启动 CFETR/BEST 示范工程建设，同步配套氚供应链与高温超导材料产能。',
+    fullTextUrl: 'https://www.nea.gov.cn/',
+    relatedTechnologies: ['f-tokamak', 'f-magnet', 'f-tritium', 'f-heat-capture'],
+    relatedIndustries: ['fusion-energy'],
+    marketReactionDays: 3,
+  },
+];
+
+export const INDUSTRY_DATA: Industry[] = [
+  {
+    id: 'compute-grid',
+    name: '算力网',
+    tagline: '全国一体化算力网络，AI 时代的电网',
+    description: '把分散在东西部的数据中心、超算、智算中心通过高速网络互联，按任务自动调度算力资源，让训练大模型像用电一样方便。',
+    nationalPlanRef: '十五五数字基础设施 / 东数西算',
+    chainStages: [
+      {
+        id: 'gpu-chip',
+        name: 'GPU / 加速芯片',
+        shortLabel: '芯片',
+        description: '高性能 GPU、NPU、ASIC 是算力最底层的硬件基础，决定训练和推理的速度上限。',
+        technologyIds: ['computer-vision', 'reinforcement-learning'],
+      },
+      {
+        id: 'server',
+        name: '整机服务器',
+        shortLabel: '服务器',
+        description: '将芯片、内存、高速互联封装成可批量部署的服务器，强调散热、功耗和可靠性。',
+        technologyIds: [],
+      },
+      {
+        id: 'datacenter',
+        name: '数据中心',
+        shortLabel: '数据中心',
+        description: '大规模服务器集群和配套电力、冷却、网络基础设施，是算力的物理载体。',
+        technologyIds: [],
+      },
+      {
+        id: 'scheduler',
+        name: '算力调度',
+        shortLabel: '调度',
+        description: '跨地域、跨集群的任务调度与算力交易平台，决定算力资源能否高效利用。',
+        technologyIds: ['world-model'],
+      },
+      {
+        id: 'ai-app',
+        name: 'AI 应用',
+        shortLabel: 'AI 应用',
+        description: '大模型、推荐系统、自动驾驶等算力消费端，决定算力网络最终的经济价值。',
+        technologyIds: ['llm-agent', 'world-model'],
+      },
+    ],
+    relatedPolicies: ['east-data-west-compute', 'chips-act', '15fyp-proposal', 'central-economic-2025'],
+    capitalFlow: [
+      { stage: '芯片', amount: 78, trend: 'up', heat: 'hot' },
+      { stage: '服务器', amount: 55, trend: 'up', heat: 'warm' },
+      { stage: '数据中心', amount: 92, trend: 'up', heat: 'hot' },
+      { stage: '调度', amount: 18, trend: 'stable', heat: 'cool' },
+      { stage: 'AI 应用', amount: 64, trend: 'up', heat: 'warm' },
+    ],
+  },
+  {
+    id: 'humanoid-robot',
+    name: '人形机器人',
+    tagline: '从零部件到整机的国产化突破',
+    description: '模仿人类形态和运动能力的通用机器人，被视为具身智能落地的终极形态，2025 年起正进入工厂、门店、家庭的小规模试用阶段。',
+    nationalPlanRef: '工信部人形机器人指导意见 / 十五五战略新兴产业',
+    chainStages: [
+      {
+        id: 'reducer',
+        name: '精密减速器',
+        shortLabel: '减速器',
+        description: '谐波减速器、RV 减速器是机器人关节的核心传动件，长期由日本厂商主导，国产替代正在加速。',
+        technologyIds: ['joint-control'],
+      },
+      {
+        id: 'servo',
+        name: '伺服电机',
+        shortLabel: '伺服电机',
+        description: '决定关节的力量和精度，头部厂商已能把电机+减速器+编码器做成一体化关节模组。',
+        technologyIds: ['servo-motor'],
+      },
+      {
+        id: 'sensor',
+        name: '传感器',
+        shortLabel: '传感器',
+        description: '视觉、力觉、触觉、IMU 等多模态传感器是机器人感知世界的"五官"。',
+        technologyIds: ['computer-vision', 'force-sensor', 'tactile-skin'],
+      },
+      {
+        id: 'controller',
+        name: '控制器/大脑',
+        shortLabel: '控制器',
+        description: '端侧算力模组+具身大模型，把感知信息转化为运动指令，是人形机器人的"大脑"。',
+        technologyIds: ['llm-agent', 'reinforcement-learning', 'world-model'],
+      },
+      {
+        id: 'whole-machine',
+        name: '整机与场景',
+        shortLabel: '整机',
+        description: '从本体组装到在工厂、服务、家庭场景中的商用试点，决定整个产业链的兑现速度。',
+        technologyIds: ['path-planning', 'joint-control'],
+      },
+    ],
+    relatedPolicies: ['humanoid-robot-guidance', 'most-embodied-ai', 'new-industrialization', '15fyp-proposal', 'central-economic-2025'],
+    capitalFlow: [
+      { stage: '减速器', amount: 22, trend: 'up', heat: 'warm' },
+      { stage: '伺服电机', amount: 34, trend: 'up', heat: 'warm' },
+      { stage: '传感器', amount: 15, trend: 'up', heat: 'cool' },
+      { stage: '控制器', amount: 48, trend: 'up', heat: 'hot' },
+      { stage: '整机', amount: 71, trend: 'up', heat: 'hot' },
+    ],
+  },
+  {
+    id: 'bio-medicine',
+    name: '生物医药',
+    tagline: '从基因编辑到创新药上市的完整链条',
+    description: '基因编辑、mRNA、细胞治疗、AI 药物发现等新技术，正在重塑从早期研究、临床试验到商业化生产的整个创新药产业链。',
+    nationalPlanRef: '十五五生物制造 / 上海先进疗法清单',
+    chainStages: [
+      {
+        id: 'gene-editing',
+        name: '基因编辑',
+        shortLabel: '基因编辑',
+        description: 'CRISPR、碱基编辑等工具让研究者可以在基因组水平上精准操作，是新一代疗法的上游技术底座。',
+        technologyIds: [],
+      },
+      {
+        id: 'delivery',
+        name: '药物递送',
+        shortLabel: '递送',
+        description: '脂质纳米颗粒、AAV 载体决定药物能否精准、安全地进入目标细胞，是创新疗法成败的关键。',
+        technologyIds: [],
+      },
+      {
+        id: 'clinical',
+        name: '临床试验',
+        shortLabel: '临床',
+        description: '多中心、多期临床试验耗时长、成本高，是创新药走向市场前最昂贵的阶段。',
+        technologyIds: [],
+      },
+      {
+        id: 'manufacturing',
+        name: '生产制造',
+        shortLabel: '生产',
+        description: 'GMP 级别的生物工艺与连续制造，决定新疗法能否规模化、稳定供应。',
+        technologyIds: [],
+      },
+      {
+        id: 'commercial',
+        name: '商业化上市',
+        shortLabel: '上市',
+        description: '从医保准入、支付方式创新到国际化授权，最终决定创新药的市场空间。',
+        technologyIds: [],
+      },
+    ],
+    relatedPolicies: ['14fyp-outline', '15fyp-proposal', 'central-economic-2025'],
+    capitalFlow: [
+      { stage: '基因编辑', amount: 20, trend: 'stable', heat: 'warm' },
+      { stage: '递送', amount: 12, trend: 'stable', heat: 'cool' },
+      { stage: '临床', amount: 58, trend: 'up', heat: 'hot' },
+      { stage: '生产', amount: 26, trend: 'up', heat: 'warm' },
+      { stage: '上市', amount: 44, trend: 'up', heat: 'warm' },
+    ],
+  },
+  {
+    id: 'neural-prosthetics',
+    name: '神经假肢 / BCI 医疗',
+    tagline: '从植入电极到康复临床的脑机接口全链条',
+    description: '把高精度电极、神经信号处理芯片、解码算法和外部执行设备组合成一体，帮助瘫痪、失语、渐冻症等患者重获运动或沟通能力。',
+    nationalPlanRef: '十四五脑科学专项 / 工信部 BCI 产业标准',
+    chainStages: [
+      {
+        id: 'bci-electrode',
+        name: '植入/柔性电极',
+        shortLabel: '电极',
+        description: '微米级柔性电极阵列是脑机接口最上游的核心部件，直接决定信号质量与长期稳定性，国产替代空间大。',
+        technologyIds: ['bci-implant', 'bci-eeg-cap'],
+      },
+      {
+        id: 'bci-acquisition-chip',
+        name: '信号采集芯片',
+        shortLabel: '采集芯片',
+        description: '低噪声模拟前端+AD 转换+无线传输的专用 SoC，决定多通道并发采样能力和可植入设备的功耗寿命。',
+        technologyIds: ['bci-eeg-cap', 'bci-fnirs'],
+      },
+      {
+        id: 'bci-decoder-sw',
+        name: '解码算法/软件',
+        shortLabel: '解码软件',
+        description: '运行在外部计算单元或嵌入式设备上的神经解码与控制软件，覆盖运动意图、光标控制、语音合成等场景。',
+        technologyIds: ['bci-dl-decoder', 'bci-motor-intent', 'bci-speech-decode'],
+      },
+      {
+        id: 'bci-device',
+        name: '外部设备/假肢',
+        shortLabel: '外设',
+        description: '机械臂、轮椅、电脑、语音合成器等受控终端，以及康复训练所需的外骨骼、VR 设备等。',
+        technologyIds: ['bci-tms', 'bci-closed-loop'],
+      },
+      {
+        id: 'bci-clinical',
+        name: '医院与康复应用',
+        shortLabel: '临床应用',
+        description: '神经外科、康复医学、精神科等临床科室的落地场景，决定 BCI 的医保支付、合规路径与商业规模。',
+        technologyIds: ['bci-tms'],
+      },
+    ],
+    relatedPolicies: ['brain-14fyp', 'most-bci-2023', 'us-brain-init-2-0', 'miit-bci-standard-2024'],
+    capitalFlow: [
+      { stage: '电极', amount: 14, trend: 'up', heat: 'warm' },
+      { stage: '采集芯片', amount: 9, trend: 'up', heat: 'cool' },
+      { stage: '解码软件', amount: 21, trend: 'up', heat: 'hot' },
+      { stage: '外设', amount: 18, trend: 'up', heat: 'warm' },
+      { stage: '临床应用', amount: 32, trend: 'up', heat: 'hot' },
+    ],
+  },
+  {
+    id: 'quantum-computing-industry',
+    name: '量子计算产业链',
+    tagline: '从量子比特到云上量子算力的完整栈',
+    description: '把不同物理体系的量子比特、制冷/控制电子、软件工具链、云平台和行业算法整合到一起，形成一条从基础器件到行业应用的新兴产业链。',
+    nationalPlanRef: '十四五量子信息专项 / 十五五战略新兴产业',
+    chainStages: [
+      {
+        id: 'q-device',
+        name: '量子比特器件',
+        shortLabel: '量子比特',
+        description: '超导、离子阱、光量子等物理体系的核心器件，是量子计算产业的"芯片层"。',
+        technologyIds: ['q-superconducting', 'q-ion-trap', 'q-photonic'],
+      },
+      {
+        id: 'q-cryogenic',
+        name: '制冷与控制系统',
+        shortLabel: '制冷/控制',
+        description: '稀释制冷机、微波/激光控制电子、真空腔等支撑系统，决定量子计算机能否稳定运行。',
+        technologyIds: ['q-superconducting', 'q-ion-trap'],
+      },
+      {
+        id: 'q-software',
+        name: '量子软件/算法',
+        shortLabel: '软件/算法',
+        description: '量子算法库、编译器、纠错码等软件层，让开发者不必理解所有底层物理就能使用量子计算。',
+        technologyIds: ['q-algorithm', 'q-error-correction', 'q-programming'],
+      },
+      {
+        id: 'q-cloud',
+        name: '量子云平台',
+        shortLabel: '云平台',
+        description: '通过 SaaS 把量子计算机开放给企业与研究者，让量子算力像 GPU 算力一样按需调用。',
+        technologyIds: ['q-programming', 'q-simulation'],
+      },
+      {
+        id: 'q-application',
+        name: '行业应用',
+        shortLabel: '行业应用',
+        description: '金融优化、新材料、生物制药、量子加密通信等落地场景，决定量子计算的经济价值。',
+        technologyIds: ['q-simulation', 'q-optimization', 'q-crypto'],
+      },
+    ],
+    relatedPolicies: ['most-quantum', 'quantum-14fyp', 'us-nqi-reauth-2024', 'eu-quantum-chips-act', '15fyp-proposal'],
+    capitalFlow: [
+      { stage: '量子比特', amount: 38, trend: 'up', heat: 'hot' },
+      { stage: '制冷/控制', amount: 16, trend: 'up', heat: 'warm' },
+      { stage: '软件/算法', amount: 22, trend: 'up', heat: 'warm' },
+      { stage: '云平台', amount: 19, trend: 'up', heat: 'warm' },
+      { stage: '行业应用', amount: 11, trend: 'stable', heat: 'cool' },
+    ],
+  },
+  {
+    id: 'fusion-energy',
+    name: '聚变能源产业链',
+    tagline: '从等离子体装置到商业聚变电站的长期工程',
+    description: '以托卡马克、仿星器、惯性约束为主的聚变装置，加上高温超导磁体、特种材料、氚供应与能量转换系统，共同构成未来清洁能源的产业链骨架。',
+    nationalPlanRef: '十五五能源规划 / 国际 ITER 合作',
+    chainStages: [
+      {
+        id: 'f-device',
+        name: '等离子体装置',
+        shortLabel: '装置',
+        description: '托卡马克、仿星器、激光驱动惯性约束装置是聚变堆的"发动机"，决定整个系统的能量增益水平。',
+        technologyIds: ['f-tokamak', 'f-stellarator', 'f-inertial'],
+      },
+      {
+        id: 'f-magnet-industry',
+        name: '高温超导磁体',
+        shortLabel: '磁体',
+        description: 'REBCO 高温超导带材和磁体系统的量产能力，是紧凑型商业聚变装置能否成立的关键制约。',
+        technologyIds: ['f-magnet'],
+      },
+      {
+        id: 'f-materials',
+        name: '聚变堆材料',
+        shortLabel: '堆内材料',
+        description: '第一壁、偏滤器、包层、屏蔽层等直接面对等离子体与中子环境的材料，是目前最硬的工程瓶颈。',
+        technologyIds: ['f-first-wall', 'f-tritium', 'f-neutron-shield'],
+      },
+      {
+        id: 'f-power-conversion',
+        name: '能量转换系统',
+        shortLabel: '能量转换',
+        description: '把聚变反应释放的中子与带电粒子能量转化为电力的关键系统，既包括成熟蒸汽循环也包括前瞻的直接能量转换。',
+        technologyIds: ['f-heat-capture', 'f-direct-conversion'],
+      },
+      {
+        id: 'f-plant',
+        name: '商业示范电站',
+        shortLabel: '示范电站',
+        description: '连接科研装置与电网的商业或准商业示范电站，是聚变从实验室走向能源市场的最后一公里。',
+        technologyIds: ['f-tokamak', 'f-heat-capture'],
+      },
+    ],
+    relatedPolicies: ['most-fusion-2022', 'iter-schedule-2024', 'us-doe-bold-fusion', '15fyp-energy-fusion'],
+    capitalFlow: [
+      { stage: '装置', amount: 40, trend: 'up', heat: 'hot' },
+      { stage: '磁体', amount: 28, trend: 'up', heat: 'warm' },
+      { stage: '堆内材料', amount: 14, trend: 'up', heat: 'cool' },
+      { stage: '能量转换', amount: 9, trend: 'stable', heat: 'cool' },
+      { stage: '示范电站', amount: 36, trend: 'up', heat: 'hot' },
+    ],
+  },
+];
+
+export const POLICY_BY_ID: Record<string, Policy> = POLICY_DATA.reduce((acc, p) => {
+  acc[p.id] = p;
+  return acc;
+}, {} as Record<string, Policy>);
+
+export const INDUSTRY_BY_ID: Record<string, Industry> = INDUSTRY_DATA.reduce((acc, i) => {
+  acc[i.id] = i;
+  return acc;
+}, {} as Record<string, Industry>);
+
+export const ALL_SUB_TECHS: { id: string; name: string; categoryId: string; categoryName: string }[] = Object.values(TECH_DATA).flatMap(t =>
+  t.categories.flatMap(cat =>
+    cat.subComponents.map(sub => ({ id: sub.id, name: sub.name, categoryId: cat.id, categoryName: cat.name })),
+  ),
+);
+
+const COUNTRY_ISO3: Record<string, string> = {
+  '中国': 'CHN',
+  '美国': 'USA',
+  '欧盟': 'EUU',
+  '日本': 'JPN',
+  '韩国': 'KOR',
+  '英国': 'GBR',
+};
+
+const COUNTRY_COORDS: Record<string, { x: number; y: number }> = {
+  '中国': { x: 72, y: 42 },
+  '美国': { x: 22, y: 42 },
+  '欧盟': { x: 50, y: 32 },
+  '日本': { x: 82, y: 46 },
+  '韩国': { x: 78, y: 44 },
+  '英国': { x: 48, y: 28 },
+};
+
+function deriveInnovationStage(p: Policy): InnovationStage {
+  const text = `${p.title}${p.summary}`;
+  if (/(基础|前沿|基础研究|科学问题|原理)/.test(text)) return 'basic-research';
+  if (/(示范|试点|pilot|首台|验证)/.test(text)) return 'pilot';
+  if (/(产业化|量产|商业|市场|落地|商业化|商用)/.test(text)) return 'commercialization';
+  if (p.department === 'MoST') return 'basic-research';
+  if (p.department === 'MIIT') return 'applied-rd';
+  if (p.department === 'NDRC') return 'commercialization';
+  if (p.department === 'International') return 'applied-rd';
+  return 'applied-rd';
+}
+
+POLICY_DATA.forEach((p, i) => {
+  if (!p.iso3) p.iso3 = COUNTRY_ISO3[p.country] ?? 'OTH';
+  if (!p.coordinates) {
+    const base = COUNTRY_COORDS[p.country] ?? { x: 50, y: 50 };
+    const jitter = (i % 5) - 2;
+    p.coordinates = { x: base.x + jitter * 3, y: base.y + ((i >> 1) % 5 - 2) * 3 };
+  }
+  if (!p.innovationStage) p.innovationStage = deriveInnovationStage(p);
+  if (!p.keywords) {
+    const kws = new Set<string>();
+    p.relatedTechnologies.slice(0, 3).forEach(t => kws.add(t));
+    p.relatedIndustries.slice(0, 2).forEach(t => kws.add(t));
+    p.keywords = Array.from(kws);
+  }
+  if (!p.highlights) {
+    p.highlights = [p.summary.slice(0, 40), p.departmentLabel + ' · ' + p.date];
+  }
+});
+
+export const INNOVATION_STAGES: { id: InnovationStage; name: string; english: string }[] = [
+  { id: 'basic-research', name: '基础研究', english: 'Basic Research' },
+  { id: 'applied-rd', name: '应用研发', english: 'Applied R&D' },
+  { id: 'pilot', name: '示范试点', english: 'Pilot' },
+  { id: 'commercialization', name: '产业化', english: 'Commercialization' },
+];
+
+export const REGIONS: Region[] = [
+  {
+    id: 'beijing',
+    name: '北京',
+    englishName: 'Beijing',
+    coordinates: { x: 68, y: 30 },
+    endowment: '高校密集 · 国家实验室集群 · AI/脑机基础研究重镇',
+    policies: [
+      { id: 'most-embodied-ai', targetTrack: '具身智能基础研究', focus: '多模态大模型 / 世界模型' },
+      { id: 'brain-14fyp', targetTrack: '脑科学与类脑计算', focus: '脑机接口临床转化' },
+    ],
+    scenarios: [
+      { name: '中关村具身智能产业园', description: '国内最早集聚人形机器人创业公司的园区，聚焦软件算法与整机集成。', technologies: ['llm-agent', 'reinforcement-learning', 'world-model'] },
+      { name: '脑机接口临床中心', description: '依托宣武医院、天坛医院等，推动侵入式 BCI 临床试验。', technologies: ['bci-implant', 'bci-closed-loop'] },
+    ],
+  },
+  {
+    id: 'shanghai',
+    name: '上海',
+    englishName: 'Shanghai',
+    coordinates: { x: 78, y: 52 },
+    endowment: '金融资本密集 · 张江科学城 · 高端制造产业基础扎实',
+    policies: [
+      { id: 'humanoid-robot-guidance', targetTrack: '人形机器人整机', focus: '张江机器人谷 / 浦东具身智能基地' },
+      { id: 'quantum-14fyp', targetTrack: '量子科技', focus: '上海量子科学研究中心' },
+    ],
+    scenarios: [
+      { name: '张江人形机器人创新中心', description: '提供公共测试、中试与供应链对接平台。', technologies: ['servo-motor', 'joint-control', 'path-planning'] },
+      { name: '量子计算云平台', description: '国盾量子、本源量子等提供的云上量子计算服务。', technologies: ['q-superconducting', 'q-algorithm', 'q-programming'] },
+    ],
+  },
+  {
+    id: 'guangdong',
+    name: '广东',
+    englishName: 'Guangdong',
+    coordinates: { x: 70, y: 72 },
+    endowment: '电子制造供应链完备 · 深圳创业资本活跃 · 产业化效率高',
+    policies: [
+      { id: 'new-industrialization', targetTrack: '智能制造与机器人', focus: '深圳 / 佛山 / 东莞整机产业带' },
+      { id: 'miit-bci-standard-2024', targetTrack: 'BCI 医疗器械', focus: '深圳脑科学与脑机接口医疗专项' },
+    ],
+    scenarios: [
+      { name: '深圳人形机器人创新联合体', description: '优必选、越疆、大疆等整机公司联合推进量产化。', technologies: ['servo-motor', 'computer-vision', 'joint-control'] },
+      { name: '鹏城实验室具身智能训练场', description: '提供大规模仿真训练与真机测试。', technologies: ['reinforcement-learning', 'world-model'] },
+    ],
+  },
+  {
+    id: 'jiangsu',
+    name: '江苏',
+    englishName: 'Jiangsu',
+    coordinates: { x: 76, y: 50 },
+    endowment: '精密制造链长 · 苏州 BioBAY 生物医药 · 南京半导体基础好',
+    policies: [
+      { id: 'humanoid-robot-guidance', targetTrack: '关键零部件', focus: '苏州谐波减速器 / 力传感器集群' },
+      { id: 'brain-14fyp', targetTrack: '脑机接口核心芯片', focus: '苏州工业园 BioBAY' },
+    ],
+    scenarios: [
+      { name: '苏州关节减速器集群', description: '绿的谐波、双环传动等核心零部件企业集聚。', technologies: ['servo-motor', 'joint-control', 'force-sensor'] },
+      { name: '苏州脑机接口产业基地', description: 'BioBAY 内多家 BCI 初创公司推进采集芯片与植入器械。', technologies: ['bci-implant', 'bci-dl-decoder'] },
+    ],
+  },
+  {
+    id: 'anhui',
+    name: '安徽',
+    englishName: 'Anhui',
+    coordinates: { x: 73, y: 50 },
+    endowment: '核聚变基础研究（EAST）· 量子信息（中科大）双强',
+    policies: [
+      { id: 'most-fusion-2022', targetTrack: '核聚变基础研究', focus: '合肥科学岛 EAST 托卡马克' },
+      { id: 'quantum-14fyp', targetTrack: '量子通信与计算', focus: '中科大量子信息重点实验室' },
+    ],
+    scenarios: [
+      { name: '合肥 EAST 装置升级', description: '面向稳态长脉冲运行的工程研究平台。', technologies: ['f-tokamak', 'f-magnet', 'f-first-wall'] },
+      { name: '本源量子超导实验室', description: '国内首家提供全栈超导量子计算的商业公司。', technologies: ['q-superconducting', 'q-error-correction', 'q-programming'] },
+    ],
+  },
+  {
+    id: 'sichuan',
+    name: '四川',
+    englishName: 'Sichuan',
+    coordinates: { x: 58, y: 58 },
+    endowment: '核工业基础深厚 · 成都电子信息产业链',
+    policies: [
+      { id: 'most-fusion-2022', targetTrack: '聚变-裂变混合与材料', focus: '成都核工业第二研究设计院' },
+      { id: 'new-industrialization', targetTrack: '工业机器人', focus: '成都新经济 AI 产业园' },
+    ],
+    scenarios: [
+      { name: '核工业西南物理研究院', description: '中国环流三号 HL-3 托卡马克装置运行基地。', technologies: ['f-tokamak', 'f-tritium', 'f-neutron-shield'] },
+      { name: '成都高新 AI 机器人产业园', description: '覆盖服务机器人与工业机器人整机。', technologies: ['computer-vision', 'path-planning'] },
+    ],
+  },
+  {
+    id: 'zhejiang',
+    name: '浙江',
+    englishName: 'Zhejiang',
+    coordinates: { x: 77, y: 55 },
+    endowment: '互联网云计算基础 · 之江实验室 · 民营制造活力',
+    policies: [
+      { id: 'east-data-west-compute', targetTrack: '智算中心', focus: '杭州 / 乌镇云计算枢纽' },
+      { id: 'humanoid-robot-guidance', targetTrack: '机器人整机与应用', focus: '宁波杭州机器人产业集群' },
+    ],
+    scenarios: [
+      { name: '之江实验室具身智能联合研究', description: '推进多模态大模型与机器人交叉研究。', technologies: ['llm-agent', 'world-model'] },
+      { name: '杭州云栖算力枢纽', description: '阿里云智算中心覆盖大模型训练与推理。', technologies: ['reinforcement-learning', 'world-model'] },
+    ],
+  },
+  {
+    id: 'international',
+    name: '国际',
+    englishName: 'Intl',
+    coordinates: { x: 25, y: 38 },
+    endowment: '美 / 欧 / 日 / 韩 前沿科研与产业龙头',
+    policies: [
+      { id: 'chips-act', targetTrack: '半导体产业链', focus: '美国本土制造 / 出口管制' },
+      { id: 'us-brain-init-2-0', targetTrack: '脑科学', focus: 'NIH BRAIN 2.0 计划' },
+      { id: 'eu-quantum-chips-act', targetTrack: '量子芯片', focus: '欧盟量子旗舰计划' },
+      { id: 'iter-schedule-2024', targetTrack: '核聚变国际合作', focus: 'ITER 法国工程进度' },
+    ],
+    scenarios: [
+      { name: 'Tesla / Figure / 1X 整机', description: '北美具身智能整机龙头，主导 Optimus / 02 / Neo 量产路线。', technologies: ['computer-vision', 'reinforcement-learning', 'world-model'] },
+      { name: 'Neuralink / Synchron 临床', description: '北美 BCI 临床试验领先，推进人体植入。', technologies: ['bci-implant', 'bci-dl-decoder'] },
+      { name: 'IBM / Google / PsiQuantum', description: '超导 + 光量子双路线全球竞争。', technologies: ['q-superconducting', 'q-photonic', 'q-error-correction'] },
+    ],
+  },
+];
+
+export const REGIONS_BY_ID: Record<string, Region> = REGIONS.reduce((acc, r) => {
+  acc[r.id] = r;
+  return acc;
+}, {} as Record<string, Region>);
+
+export const FUNDING_EVENTS: FundingEvent[] = [
+  { id: 'f-ea-1', company: 'Figure AI', round: 'Series C', amount: '$1.5B', date: '2025-02', track: '人形机器人整机', techId: 'embodied-ai' },
+  { id: 'f-ea-2', company: '宇树科技', round: 'Series B+', amount: '¥1.2B', date: '2025-03', track: '四足 / 人形机器人', techId: 'embodied-ai' },
+  { id: 'f-ea-3', company: '智元机器人', round: 'A2', amount: '¥600M', date: '2024-11', track: '人形机器人', techId: 'embodied-ai' },
+  { id: 'f-ea-4', company: '银河通用', round: 'Pre-A', amount: '¥250M', date: '2025-01', track: '具身大模型', techId: 'embodied-ai' },
+  { id: 'f-ea-5', company: '千寻智能', round: 'Angel+', amount: '¥80M', date: '2024-12', track: '端到端 VLA 模型', techId: 'embodied-ai' },
+
+  { id: 'f-bci-1', company: 'Neuralink', round: 'Series E', amount: '$650M', date: '2024-08', track: '侵入式 BCI', techId: 'bci' },
+  { id: 'f-bci-2', company: 'Synchron', round: 'Series C', amount: '$75M', date: '2024-10', track: '微创血管 BCI', techId: 'bci' },
+  { id: 'f-bci-3', company: '脑虎科技', round: 'Series B', amount: '¥300M', date: '2025-01', track: '柔性电极 BCI', techId: 'bci' },
+  { id: 'f-bci-4', company: '博睿康', round: 'C+', amount: '¥200M', date: '2024-09', track: '采集设备', techId: 'bci' },
+  { id: 'f-bci-5', company: 'Precision Neuroscience', round: 'Series C', amount: '$102M', date: '2025-03', track: '皮层表面阵列', techId: 'bci' },
+
+  { id: 'f-q-1', company: 'PsiQuantum', round: 'Series E', amount: '$620M', date: '2025-02', track: '光量子计算', techId: 'quantum' },
+  { id: 'f-q-2', company: 'Quantinuum', round: 'Growth', amount: '$300M', date: '2024-12', track: '离子阱量子', techId: 'quantum' },
+  { id: 'f-q-3', company: '本源量子', round: 'C', amount: '¥600M', date: '2024-10', track: '超导量子计算', techId: 'quantum' },
+  { id: 'f-q-4', company: 'IonQ', round: 'Secondary', amount: '$500M', date: '2024-11', track: '离子阱 + 算法', techId: 'quantum' },
+  { id: 'f-q-5', company: '玻色量子', round: 'B', amount: '¥200M', date: '2025-01', track: '相干光量子', techId: 'quantum' },
+
+  { id: 'f-fu-1', company: 'Commonwealth Fusion', round: 'Series B2', amount: '$1.8B', date: '2024-09', track: '高温超导托卡马克', techId: 'fusion' },
+  { id: 'f-fu-2', company: 'Helion Energy', round: 'Series F', amount: '$425M', date: '2025-01', track: '磁惯性聚变', techId: 'fusion' },
+  { id: 'f-fu-3', company: '能量奇点', round: 'B', amount: '¥700M', date: '2024-12', track: '高温超导紧凑托卡马克', techId: 'fusion' },
+  { id: 'f-fu-4', company: 'TAE Technologies', round: 'Series G', amount: '$150M', date: '2025-03', track: '场反位形 FRC', techId: 'fusion' },
+  { id: 'f-fu-5', company: '星环聚能', round: 'A', amount: '¥500M', date: '2024-11', track: '反场箍缩 / 球马克', techId: 'fusion' },
+];
+
+export const CHAIN_MAP: Record<TechnologyType, ChainLayer[]> = {
+  'embodied-ai': [
+    {
+      layer: '上游',
+      items: [
+        { name: 'GPU / AI 芯片', heat: 'hot', amount: '$200B', reason: '供不应求，海外管制持续' },
+        { name: '六维力传感器', heat: 'warm', amount: '¥6B', gap: true, reason: '高精度国产化率 < 30%，主要依赖 ATI / Schunk' },
+        { name: '伺服电机 / 谐波减速器', heat: 'hot', amount: '¥18B' },
+        { name: '激光雷达 / 深度相机', heat: 'warm', amount: '¥15B' },
+        { name: '碳化硅功率器件', heat: 'cold', amount: '¥4B', gap: true, reason: '8 寸衬底良率仍低' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '多模态大模型', heat: 'hot', amount: '—', reason: 'VLA 端到端方案成主战场' },
+        { name: '仿真引擎', heat: 'warm', amount: '—', gap: true, reason: 'Isaac Sim / MuJoCo 国内替代缺失' },
+        { name: '整机本体', heat: 'hot', amount: '¥30B' },
+        { name: '操作系统 / 中间件', heat: 'warm', amount: '—' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '工厂 / 物流分拣', heat: 'warm', amount: '¥20B' },
+        { name: '家庭服务', heat: 'cold', amount: '—', gap: true, reason: '可靠性 / 成本尚不满足 C 端' },
+        { name: '商业服务（导览、迎宾）', heat: 'warm', amount: '¥8B' },
+        { name: '科研 / 教育', heat: 'hot', amount: '¥6B' },
+      ],
+    },
+  ],
+  'bci': [
+    {
+      layer: '上游',
+      items: [
+        { name: '微电极 / 柔性阵列', heat: 'hot', amount: '¥3B', gap: true, reason: '长期植入生物相容性难题' },
+        { name: '低噪声采集 ASIC', heat: 'warm', amount: '¥2B', gap: true, reason: '高通道功耗控制国内缺口' },
+        { name: '无线供电 / 通信', heat: 'warm', amount: '¥1.5B' },
+        { name: '植入手术机器人', heat: 'warm', amount: '¥2B' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '神经信号解码算法', heat: 'hot', amount: '—' },
+        { name: '刺激调控模式', heat: 'warm', amount: '—' },
+        { name: '临床试验 / IRB', heat: 'hot', amount: '—', gap: true, reason: '国内入组与伦理审批偏慢' },
+        { name: '器械整机', heat: 'warm', amount: '¥3B' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '运动康复（脊髓损伤）', heat: 'hot', amount: '¥4B' },
+        { name: '语言障碍（ALS）', heat: 'hot', amount: '¥2B' },
+        { name: '癫痫 / 抑郁闭环调控', heat: 'warm', amount: '¥3B' },
+        { name: '消费增强', heat: 'cold', amount: '—', gap: true, reason: '监管与伦理尚未放开' },
+      ],
+    },
+  ],
+  'quantum': [
+    {
+      layer: '上游',
+      items: [
+        { name: '稀释制冷机', heat: 'warm', amount: '¥2B', gap: true, reason: 'BlueFors 等进口依赖' },
+        { name: '超导 / 离子阱芯片', heat: 'hot', amount: '¥3B' },
+        { name: '微波电子学', heat: 'warm', amount: '¥1.5B' },
+        { name: '激光与真空系统', heat: 'warm', amount: '¥1.2B' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '量子纠错编码', heat: 'hot', amount: '—', gap: true, reason: '逻辑量子比特阈值仍未突破' },
+        { name: '量子算法库', heat: 'warm', amount: '—' },
+        { name: '量子编译 / 控制栈', heat: 'warm', amount: '—' },
+        { name: '整机集成', heat: 'hot', amount: '¥2B' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '量子化学模拟', heat: 'warm', amount: '¥1B' },
+        { name: '金融组合优化', heat: 'cold', amount: '—', gap: true, reason: '实用量子优势尚未出现' },
+        { name: '量子云服务', heat: 'warm', amount: '¥0.8B' },
+        { name: '后量子密码', heat: 'hot', amount: '¥1.5B' },
+      ],
+    },
+  ],
+  'fusion': [
+    {
+      layer: '上游',
+      items: [
+        { name: '高温超导带材', heat: 'hot', amount: '¥4B', gap: true, reason: '千米级长带产能不足' },
+        { name: '面向等离子体材料', heat: 'warm', amount: '¥2B', gap: true, reason: '钨 / 碳化硼抗中子辐照' },
+        { name: '氚自持包层', heat: 'cold', amount: '—', gap: true, reason: '工程验证尚在早期' },
+        { name: '大功率电源', heat: 'warm', amount: '¥1.5B' },
+      ],
+    },
+    {
+      layer: '中游',
+      items: [
+        { name: '托卡马克主机', heat: 'hot', amount: '—' },
+        { name: '惯性靶丸与驱动', heat: 'warm', amount: '—' },
+        { name: '诊断与控制系统', heat: 'warm', amount: '—' },
+        { name: '整机工程集成', heat: 'hot', amount: '¥8B' },
+      ],
+    },
+    {
+      layer: '下游',
+      items: [
+        { name: '示范电站', heat: 'hot', amount: '—' },
+        { name: '聚变中子源应用', heat: 'warm', amount: '¥0.5B' },
+        { name: '并网商业运营', heat: 'cold', amount: '—', gap: true, reason: '需解决持续运行与成本' },
+        { name: '氦-3 / 医用同位素', heat: 'warm', amount: '¥0.3B' },
+      ],
+    },
+  ],
+};
+
