@@ -1,0 +1,316 @@
+{
+  "industries": [
+    {
+      "id": "compute-grid",
+      "name": "算力网",
+      "tagline": "全国一体化算力网络，AI 时代的电网",
+      "description": "把分散在东西部的数据中心、超算、智算中心通过高速网络互联，按任务自动调度算力资源，让训练大模型像用电一样方便。",
+      "nationalPlanRef": "十五五数字基础设施 / 东数西算",
+      "chainStages": [
+        {
+          "id": "gpu-chip",
+          "name": "GPU / 加速芯片",
+          "shortLabel": "芯片",
+          "description": "高性能 GPU、NPU、ASIC 是算力最底层的硬件基础，决定训练和推理的速度上限。",
+          "technologyIds": ["computer-vision", "reinforcement-learning"]
+        },
+        {
+          "id": "server",
+          "name": "整机服务器",
+          "shortLabel": "服务器",
+          "description": "将芯片、内存、高速互联封装成可批量部署的服务器，强调散热、功耗和可靠性。",
+          "technologyIds": []
+        },
+        {
+          "id": "datacenter",
+          "name": "数据中心",
+          "shortLabel": "数据中心",
+          "description": "大规模服务器集群和配套电力、冷却、网络基础设施，是算力的物理载体。",
+          "technologyIds": []
+        },
+        {
+          "id": "scheduler",
+          "name": "算力调度",
+          "shortLabel": "调度",
+          "description": "跨地域、跨集群的任务调度与算力交易平台，决定算力资源能否高效利用。",
+          "technologyIds": ["world-model"]
+        },
+        {
+          "id": "ai-app",
+          "name": "AI 应用",
+          "shortLabel": "AI 应用",
+          "description": "大模型、推荐系统、自动驾驶等算力消费端，决定算力网络最终的经济价值。",
+          "technologyIds": ["llm-agent", "world-model"]
+        }
+      ],
+      "relatedPolicies": ["east-data-west-compute", "chips-act", "15fyp-proposal", "central-economic-2025"],
+      "capitalFlow": [
+        { "stage": "芯片", "amount": 78, "trend": "up", "heat": "hot" },
+        { "stage": "服务器", "amount": 55, "trend": "up", "heat": "warm" },
+        { "stage": "数据中心", "amount": 92, "trend": "up", "heat": "hot" },
+        { "stage": "调度", "amount": 18, "trend": "stable", "heat": "cool" },
+        { "stage": "AI 应用", "amount": 64, "trend": "up", "heat": "warm" }
+      ]
+    },
+    {
+      "id": "humanoid-robot",
+      "name": "人形机器人",
+      "tagline": "从零部件到整机的国产化突破",
+      "description": "模仿人类形态和运动能力的通用机器人，被视为具身智能落地的终极形态，2025 年起正进入工厂、门店、家庭的小规模试用阶段。",
+      "nationalPlanRef": "工信部人形机器人指导意见 / 十五五战略新兴产业",
+      "chainStages": [
+        {
+          "id": "reducer",
+          "name": "精密减速器",
+          "shortLabel": "减速器",
+          "description": "谐波减速器、RV 减速器是机器人关节的核心传动件，长期由日本厂商主导，国产替代正在加速。",
+          "technologyIds": ["joint-control"]
+        },
+        {
+          "id": "servo",
+          "name": "伺服电机",
+          "shortLabel": "伺服电机",
+          "description": "决定关节的力量和精度，头部厂商已能把电机+减速器+编码器做成一体化关节模组。",
+          "technologyIds": ["servo-motor"]
+        },
+        {
+          "id": "sensor",
+          "name": "传感器",
+          "shortLabel": "传感器",
+          "description": "视觉、力觉、触觉、IMU 等多模态传感器是机器人感知世界的'五官'。",
+          "technologyIds": ["computer-vision", "force-sensor", "tactile-skin"]
+        },
+        {
+          "id": "controller",
+          "name": "控制器/大脑",
+          "shortLabel": "控制器",
+          "description": "端侧算力模组+具身大模型，把感知信息转化为运动指令，是人形机器人的'大脑'。",
+          "technologyIds": ["llm-agent", "reinforcement-learning", "world-model"]
+        },
+        {
+          "id": "whole-machine",
+          "name": "整机与场景",
+          "shortLabel": "整机",
+          "description": "从本体组装到在工厂、服务、家庭场景中的商用试点，决定整个产业链的兑现速度。",
+          "technologyIds": ["path-planning", "joint-control"]
+        }
+      ],
+      "relatedPolicies": ["humanoid-robot-guidance", "most-embodied-ai", "new-industrialization", "15fyp-proposal", "central-economic-2025"],
+      "capitalFlow": [
+        { "stage": "减速器", "amount": 22, "trend": "up", "heat": "warm" },
+        { "stage": "伺服电机", "amount": 34, "trend": "up", "heat": "warm" },
+        { "stage": "传感器", "amount": 15, "trend": "up", "heat": "cool" },
+        { "stage": "控制器", "amount": 48, "trend": "up", "heat": "hot" },
+        { "stage": "整机", "amount": 71, "trend": "up", "heat": "hot" }
+      ]
+    },
+    {
+      "id": "bio-medicine",
+      "name": "生物医药",
+      "tagline": "从基因编辑到创新药上市的完整链条",
+      "description": "基因编辑、mRNA、细胞治疗、AI 药物发现等新技术，正在重塑从早期研究、临床试验到商业化生产的整个创新药产业链。",
+      "nationalPlanRef": "十五五生物制造 / 上海先进疗法清单",
+      "chainStages": [
+        {
+          "id": "gene-editing",
+          "name": "基因编辑",
+          "shortLabel": "基因编辑",
+          "description": "CRISPR、碱基编辑等工具让研究者可以在基因组水平上精准操作，是新一代疗法的上游技术底座。",
+          "technologyIds": []
+        },
+        {
+          "id": "delivery",
+          "name": "药物递送",
+          "shortLabel": "递送",
+          "description": "脂质纳米颗粒、AAV 载体决定药物能否精准、安全地进入目标细胞，是创新疗法成败的关键。",
+          "technologyIds": []
+        },
+        {
+          "id": "clinical",
+          "name": "临床试验",
+          "shortLabel": "临床",
+          "description": "多中心、多期临床试验耗时长、成本高，是创新药走向市场前最昂贵的阶段。",
+          "technologyIds": []
+        },
+        {
+          "id": "manufacturing",
+          "name": "生产制造",
+          "shortLabel": "生产",
+          "description": "GMP 级别的生物工艺与连续制造，决定新疗法能否规模化、稳定供应。",
+          "technologyIds": []
+        },
+        {
+          "id": "commercial",
+          "name": "商业化上市",
+          "shortLabel": "上市",
+          "description": "从医保准入、支付方式创新到国际化授权，最终决定创新药的市场空间。",
+          "technologyIds": []
+        }
+      ],
+      "relatedPolicies": ["14fyp-outline", "15fyp-proposal", "central-economic-2025"],
+      "capitalFlow": [
+        { "stage": "基因编辑", "amount": 20, "trend": "stable", "heat": "warm" },
+        { "stage": "递送", "amount": 12, "trend": "stable", "heat": "cool" },
+        { "stage": "临床", "amount": 58, "trend": "up", "heat": "hot" },
+        { "stage": "生产", "amount": 26, "trend": "up", "heat": "warm" },
+        { "stage": "上市", "amount": 44, "trend": "up", "heat": "warm" }
+      ]
+    },
+    {
+      "id": "neural-prosthetics",
+      "name": "神经假肢 / BCI 医疗",
+      "tagline": "从植入电极到康复临床的脑机接口全链条",
+      "description": "把高精度电极、神经信号处理芯片、解码算法和外部执行设备组合成一体，帮助瘫痪、失语、渐冻症等患者重获运动或沟通能力。",
+      "nationalPlanRef": "十四五脑科学专项 / 工信部 BCI 产业标准",
+      "chainStages": [
+        {
+          "id": "bci-electrode",
+          "name": "植入/柔性电极",
+          "shortLabel": "电极",
+          "description": "微米级柔性电极阵列是脑机接口最上游的核心部件，直接决定信号质量与长期稳定性，国产替代空间大。",
+          "technologyIds": ["bci-implant", "bci-eeg-cap"]
+        },
+        {
+          "id": "bci-acquisition-chip",
+          "name": "信号采集芯片",
+          "shortLabel": "采集芯片",
+          "description": "低噪声模拟前端+AD 转换+无线传输的专用 SoC，决定多通道并发采样能力和可植入设备的功耗寿命。",
+          "technologyIds": ["bci-eeg-cap", "bci-fnirs"]
+        },
+        {
+          "id": "bci-decoder-sw",
+          "name": "解码算法/软件",
+          "shortLabel": "解码软件",
+          "description": "运行在外部计算单元或嵌入式设备上的神经解码与控制软件，覆盖运动意图、光标控制、语音合成等场景。",
+          "technologyIds": ["bci-dl-decoder", "bci-motor-intent", "bci-speech-decode"]
+        },
+        {
+          "id": "bci-device",
+          "name": "外部设备/假肢",
+          "shortLabel": "外设",
+          "description": "机械臂、轮椅、电脑、语音合成器等受控终端，以及康复训练所需的外骨骼、VR 设备等。",
+          "technologyIds": ["bci-tms", "bci-closed-loop"]
+        },
+        {
+          "id": "bci-clinical",
+          "name": "医院与康复应用",
+          "shortLabel": "临床应用",
+          "description": "神经外科、康复医学、精神科等临床科室的落地场景，决定 BCI 的医保支付、合规路径与商业规模。",
+          "technologyIds": ["bci-tms"]
+        }
+      ],
+      "relatedPolicies": ["brain-14fyp", "most-bci-2023", "us-brain-init-2-0", "miit-bci-standard-2024"],
+      "capitalFlow": [
+        { "stage": "电极", "amount": 14, "trend": "up", "heat": "warm" },
+        { "stage": "采集芯片", "amount": 9, "trend": "up", "heat": "cool" },
+        { "stage": "解码软件", "amount": 21, "trend": "up", "heat": "hot" },
+        { "stage": "外设", "amount": 18, "trend": "up", "heat": "warm" },
+        { "stage": "临床应用", "amount": 32, "trend": "up", "heat": "hot" }
+      ]
+    },
+    {
+      "id": "quantum-computing-industry",
+      "name": "量子计算产业链",
+      "tagline": "从量子比特到云上量子算力的完整栈",
+      "description": "把不同物理体系的量子比特、制冷/控制电子、软件工具链、云平台和行业算法整合到一起，形成一条从基础器件到行业应用的新兴产业链。",
+      "nationalPlanRef": "十四五量子信息专项 / 十五五战略新兴产业",
+      "chainStages": [
+        {
+          "id": "q-device",
+          "name": "量子比特器件",
+          "shortLabel": "量子比特",
+          "description": "超导、离子阱、光量子等物理体系的核心器件，是量子计算产业的'芯片层'。",
+          "technologyIds": ["q-superconducting", "q-ion-trap", "q-photonic"]
+        },
+        {
+          "id": "q-cryogenic",
+          "name": "制冷与控制系统",
+          "shortLabel": "制冷/控制",
+          "description": "稀释制冷机、微波/激光控制电子、真空腔等支撑系统，决定量子计算机能否稳定运行。",
+          "technologyIds": ["q-superconducting", "q-ion-trap"]
+        },
+        {
+          "id": "q-software",
+          "name": "量子软件/算法",
+          "shortLabel": "软件/算法",
+          "description": "量子算法库、编译器、纠错码等软件层，让开发者不必理解所有底层物理就能使用量子计算。",
+          "technologyIds": ["q-algorithm", "q-error-correction", "q-programming"]
+        },
+        {
+          "id": "q-cloud",
+          "name": "量子云平台",
+          "shortLabel": "云平台",
+          "description": "通过 SaaS 把量子计算机开放给企业与研究者，让量子算力像 GPU 算力一样按需调用。",
+          "technologyIds": ["q-programming", "q-simulation"]
+        },
+        {
+          "id": "q-application",
+          "name": "行业应用",
+          "shortLabel": "行业应用",
+          "description": "金融优化、新材料、生物制药、量子加密通信等落地场景，决定量子计算的经济价值。",
+          "technologyIds": ["q-simulation", "q-optimization", "q-crypto"]
+        }
+      ],
+      "relatedPolicies": ["most-quantum", "quantum-14fyp", "us-nqi-reauth-2024", "eu-quantum-chips-act", "15fyp-proposal"],
+      "capitalFlow": [
+        { "stage": "量子比特", "amount": 38, "trend": "up", "heat": "hot" },
+        { "stage": "制冷/控制", "amount": 16, "trend": "up", "heat": "warm" },
+        { "stage": "软件/算法", "amount": 22, "trend": "up", "heat": "warm" },
+        { "stage": "云平台", "amount": 19, "trend": "up", "heat": "warm" },
+        { "stage": "行业应用", "amount": 11, "trend": "stable", "heat": "cool" }
+      ]
+    },
+    {
+      "id": "fusion-energy",
+      "name": "聚变能源产业链",
+      "tagline": "从等离子体装置到商业聚变电站的长期工程",
+      "description": "以托卡马克、仿星器、惯性约束为主的聚变装置，加上高温超导磁体、特种材料、氚供应与能量转换系统，共同构成未来清洁能源的产业链骨架。",
+      "nationalPlanRef": "十五五能源规划 / 国际 ITER 合作",
+      "chainStages": [
+        {
+          "id": "f-device",
+          "name": "等离子体装置",
+          "shortLabel": "装置",
+          "description": "托卡马克、仿星器、激光驱动惯性约束装置是聚变堆的'发动机'，决定整个系统的能量增益水平。",
+          "technologyIds": ["f-tokamak", "f-stellarator", "f-inertial"]
+        },
+        {
+          "id": "f-magnet-industry",
+          "name": "高温超导磁体",
+          "shortLabel": "磁体",
+          "description": "REBCO 高温超导带材和磁体系统的量产能力，是紧凑型商业聚变装置能否成立的关键制约。",
+          "technologyIds": ["f-magnet"]
+        },
+        {
+          "id": "f-materials",
+          "name": "聚变堆材料",
+          "shortLabel": "堆内材料",
+          "description": "第一壁、偏滤器、包层、屏蔽层等直接面对等离子体与中子环境的材料，是目前最硬的工程瓶颈。",
+          "technologyIds": ["f-first-wall", "f-tritium", "f-neutron-shield"]
+        },
+        {
+          "id": "f-power-conversion",
+          "name": "能量转换系统",
+          "shortLabel": "能量转换",
+          "description": "把聚变反应释放的中子与带电粒子能量转化为电力的关键系统，既包括成熟蒸汽循环也包括前瞻的直接能量转换。",
+          "technologyIds": ["f-heat-capture", "f-direct-conversion"]
+        },
+        {
+          "id": "f-plant",
+          "name": "商业示范电站",
+          "shortLabel": "示范电站",
+          "description": "连接科研装置与电网的商业或准商业示范电站，是聚变从实验室走向能源市场的最后一公里。",
+          "technologyIds": ["f-tokamak", "f-heat-capture"]
+        }
+      ],
+      "relatedPolicies": ["most-fusion-2022", "iter-schedule-2024", "us-doe-bold-fusion", "15fyp-energy-fusion"],
+      "capitalFlow": [
+        { "stage": "装置", "amount": 40, "trend": "up", "heat": "hot" },
+        { "stage": "磁体", "amount": 28, "trend": "up", "heat": "warm" },
+        { "stage": "堆内材料", "amount": 14, "trend": "up", "heat": "cool" },
+        { "stage": "能量转换", "amount": 9, "trend": "stable", "heat": "cool" },
+        { "stage": "示范电站", "amount": 36, "trend": "up", "heat": "hot" }
+      ]
+    }
+  ]
+}

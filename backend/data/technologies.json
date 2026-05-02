@@ -1,101 +1,1128 @@
-[
-  {
-    "id": "embodied-ai",
-    "name": "具身智能",
-    "description": "让 AI 拥有物理身体，能在真实世界中感知、决策、行动。",
-    "children": [
-      {
-        "id": "perception",
-        "name": "感知系统",
-        "description": "机器人理解外部世界的输入通道。",
-        "children": [
-          {
-            "id": "cv",
-            "name": "计算机视觉",
-            "description": "用摄像头和算法让机器人看见、识别和理解场景。",
-            "capability": "可识别常见物体、估计位姿，开放场景理解仍受限于光照与遮挡。",
-            "achievements": [
-              { "title": "Open-vocabulary detection 大幅提升", "date": "2025", "source": "https://arxiv.org" }
-            ]
-          },
-          {
-            "id": "force-sensor",
-            "name": "力觉传感器",
-            "description": "感知接触力的大小和方向，机器人抓握所需。",
-            "capability": "工业级六维力传感成熟，低成本高分辨触觉仍待突破。",
-            "achievements": [
-              { "title": "MEMS 触觉阵列商用化", "date": "2024", "source": "https://example.com" }
-            ]
-          },
-          {
-            "id": "tactile",
-            "name": "触觉反馈",
-            "description": "模拟人类触觉的电子皮肤，让机器人感知接触纹理。",
-            "capability": "实验室原型可识别粗糙度，规模化制造仍是难点。",
-            "achievements": []
-          }
-        ]
-      },
-      {
-        "id": "motion",
-        "name": "运动控制",
-        "description": "让机器人物理运动起来，��电机到全身协调。",
-        "children": [
-          {
-            "id": "servo",
-            "name": "伺服电机",
-            "description": "精确控制转动角度和速度，是关节驱动的基础。",
-            "capability": "高扭矩密度电机依赖稀土材料，国产化率快速提升。",
-            "achievements": [
-              { "title": "国产关节模组成本下降 40%", "date": "2025", "source": "https://example.com" }
-            ]
-          },
-          {
-            "id": "joint-control",
-            "name": "关节控制",
-            "description": "多关节协调运动的算法，决定机器人动作是否平稳。",
-            "capability": "MPC + 学习方法可处理动态平衡，复杂地形仍需手工调参。",
-            "achievements": []
-          },
-          {
-            "id": "path-planning",
-            "name": "路径规划",
-            "description": "从 A 到 B 的最优运动轨迹规划。",
-            "capability": "结构化场景近实时求解，动态人群场景仍有挑战。",
-            "achievements": []
-          }
-        ]
-      },
-      {
-        "id": "decision",
-        "name": "决策智能",
-        "description": "让机器人理解任务、做出选择的大脑。",
-        "children": [
-          {
-            "id": "llm",
-            "name": "大语言模型",
-            "description": "理解自然语言指令并拆解成可执行的子任务。",
-            "capability": "高层任务规划已可用，长时序任务跟踪稳定性不足。",
-            "achievements": [
-              { "title": "VLA 模型在抓取任务上接近人类水平", "date": "2025", "source": "https://example.com" }
-            ]
-          },
-          {
-            "id": "rl",
-            "name": "强化学习",
-            "description": "通过试错让机器人学习最优策略。",
-            "capability": "仿真到现实迁移仍是核心瓶颈。",
-            "achievements": []
-          },
-          {
-            "id": "world-model",
-            "name": "世界模型",
-            "description": "对物理世界的内部模拟，用于预测和规划。",
-            "capability": "短时预测可用，长时序高保真预测尚未实现。",
-            "achievements": []
-          }
-        ]
-      }
-    ]
-  }
-]
+{
+  "technologies": [
+    {
+      "id": "embodied-ai",
+      "name": "具身智能",
+      "nameEn": "Embodied AI",
+      "tagline": "让 AI 拥有身体，能在物理世界感知、行动、决策",
+      "categories": [
+        {
+          "id": "perception",
+          "name": "感知系统",
+          "nameEn": "Perception",
+          "children": [
+            {
+              "id": "computer-vision",
+              "name": "计算机视觉",
+              "shortLabel": "计算机视觉",
+              "description": "让机器人通过摄像头识别物体、人脸、场景和空间结构，相当于机器的'眼睛'。",
+              "capabilityCan": [
+                "在良好光照下识别常见物体和人脸",
+                "估计物体距离、三维位姿",
+                "结合深度相机做室内 SLAM 建图"
+              ],
+              "capabilityCannot": [
+                "完全透明/高反光物体识别",
+                "极暗或烟雾等复杂环境",
+                "未见过品类的可靠零样本识别"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Meta SAM 2 实现视频任意物体分割",
+                  "date": "2024-07",
+                  "source": "https://ai.meta.com/sam2/"
+                },
+                {
+                  "title": "特斯拉 Optimus 纯视觉方案量产迭代",
+                  "date": "2025-01",
+                  "source": "https://www.tesla.com/AI"
+                }
+              ]
+            },
+            {
+              "id": "force-sensor",
+              "name": "力觉传感器",
+              "shortLabel": "力觉传感",
+              "description": "安装在机器人关节或末端的传感器，能感知受力大小和方向，让机器人知道'抓得稳不稳、推得重不重'。",
+              "capabilityCan": [
+                "六维力/力矩测量",
+                "精密装配中的柔顺控制",
+                "抓取力度闭环调节"
+              ],
+              "capabilityCannot": [
+                "低成本高精度仍难两全",
+                "极小接触力（<0.1N）难稳定测量",
+                "长期使用后零漂需校准"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "ATI 多轴力传感器用于波士顿动力 Atlas 装配任务",
+                  "date": "2024-10",
+                  "source": "https://www.ati-ia.com/"
+                },
+                {
+                  "title": "国产宇立仪器六维力传感器出货量翻倍",
+                  "date": "2025-03",
+                  "source": "https://www.sri-instruments.com/"
+                }
+              ]
+            },
+            {
+              "id": "tactile-skin",
+              "name": "触觉反馈",
+              "shortLabel": "电子皮肤",
+              "description": "覆盖在机器人表面的柔性传感阵列，模拟人类皮肤对压力、温度、纹理的感知，是精细操作的关键。",
+              "capabilityCan": [
+                "分布式接触点检测",
+                "软物体（布料、水果）抓取",
+                "触觉与视觉融合感知"
+              ],
+              "capabilityCannot": [
+                "大面积全身覆盖成本仍高",
+                "抗磨损耐用性不足",
+                "触觉数据标准化尚未形成"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "MIT CSAIL 发布高分辨率触觉手套",
+                  "date": "2024-06",
+                  "source": "https://www.csail.mit.edu/"
+                },
+                {
+                  "title": "Meta Digit 360 开源触觉传感器",
+                  "date": "2024-11",
+                  "source": "https://digit.ml/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "motion",
+          "name": "运动控制",
+          "nameEn": "Motion Control",
+          "children": [
+            {
+              "id": "servo-motor",
+              "name": "伺服电机",
+              "shortLabel": "伺服电机",
+              "description": "能够精确控制转动角度、速度和扭矩的电机，是机器人关节的'肌肉'。性能直接决定了机器人运动的精度和响应速度。",
+              "capabilityCan": [
+                "亚毫米级位置控制精度",
+                "毫秒级响应速度",
+                "一体化关节模组降低集成难度"
+              ],
+              "capabilityCannot": [
+                "高扭矩密度与低成本难兼得",
+                "长期满载下发热和寿命问题",
+                "极端环境（高温、强辐射）可靠性不足"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "绿的谐波谐波减速器+伺服一体关节量产",
+                  "date": "2024-12",
+                  "source": "https://www.leaderdrive.com/"
+                },
+                {
+                  "title": "宇树 H1 使用自研高扭矩关节达成跑步",
+                  "date": "2024-03",
+                  "source": "https://www.unitree.com/"
+                }
+              ]
+            },
+            {
+              "id": "joint-control",
+              "name": "关节控制",
+              "shortLabel": "关节协调",
+              "description": "让机器人多个关节协调运动的算法，保证整体动作既稳又准。人形机器人通常需要同时控制 20–40 个关节。",
+              "capabilityCan": [
+                "双足静态/动态平衡",
+                "全身动力学模型预测控制",
+                "模仿学习快速复现人类动作"
+              ],
+              "capabilityCannot": [
+                "未知地面的极限鲁棒性",
+                "受冲击后的自恢复",
+                "能耗优化仍显著落后于生物"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "波士顿动力全电动 Atlas 发布",
+                  "date": "2024-04",
+                  "source": "https://bostondynamics.com/"
+                },
+                {
+                  "title": "宇树 H1 完成室外越野行走测试",
+                  "date": "2025-02",
+                  "source": "https://www.unitree.com/"
+                }
+              ]
+            },
+            {
+              "id": "path-planning",
+              "name": "路径规划",
+              "shortLabel": "路径规划",
+              "description": "计算从起点到目标点的最优移动轨迹，同时避开障碍物。既要考虑几何可行，也要考虑时间、能耗。",
+              "capabilityCan": [
+                "静态环境下快速全局规划",
+                "动态避障反应式调整",
+                "与 SLAM 结合的在线重规划"
+              ],
+              "capabilityCannot": [
+                "人群密集环境下的社交感知规划",
+                "长时域多目标任务规划",
+                "完全未建图环境下的高速导航"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "NVIDIA Isaac 发布 cuRobo GPU 加速规划",
+                  "date": "2024-08",
+                  "source": "https://developer.nvidia.com/isaac/"
+                },
+                {
+                  "title": "Figure 02 工厂场景实时路径规划落地",
+                  "date": "2025-01",
+                  "source": "https://www.figure.ai/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cognition",
+          "name": "决策智能",
+          "nameEn": "Cognition",
+          "children": [
+            {
+              "id": "llm-agent",
+              "name": "大语言模型",
+              "shortLabel": "大语言模型",
+              "description": "像 ChatGPT 一样的大模型装进机器人大脑，让机器人能听懂自然语言指令，并把'把桌上的杯子递给我'拆成一系列可执行动作。",
+              "capabilityCan": [
+                "自然语言理解任务指令",
+                "高层任务拆解为子步骤",
+                "多模态输入（图像+语言）"
+              ],
+              "capabilityCannot": [
+                "精确物理数值推理仍不稳定",
+                "长时序任务中易遗忘",
+                "端侧部署功耗与时延受限"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Google RT-2 视觉-语言-动作模型",
+                  "date": "2023-07",
+                  "source": "https://robotics-transformer2.github.io/"
+                },
+                {
+                  "title": "Figure 02 接入 OpenAI 完成家庭场景 Demo",
+                  "date": "2024-08",
+                  "source": "https://www.figure.ai/"
+                }
+              ]
+            },
+            {
+              "id": "reinforcement-learning",
+              "name": "强化学习",
+              "shortLabel": "强化学习",
+              "description": "通过'试错 + 奖励'让机器人自己学会怎么做任务，就像训练小孩骑自行车一样。大量训练在仿真环境中完成，再迁移到真机。",
+              "capabilityCan": [
+                "仿真环境中大规模并行训练",
+                "Sim-to-Real 迁移基本可行",
+                "步态、抓取等技能自动习得"
+              ],
+              "capabilityCannot": [
+                "高样本效率的真实世界学习",
+                "安全约束下的探索",
+                "奖励函数设计仍高度依赖人工"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "ETH ANYmal 纯 RL 完成山地徒步",
+                  "date": "2024-05",
+                  "source": "https://rsl.ethz.ch/"
+                },
+                {
+                  "title": "NVIDIA GR00T 人形机器人基础模型发布",
+                  "date": "2024-03",
+                  "source": "https://developer.nvidia.com/project-gr00t"
+                }
+              ]
+            },
+            {
+              "id": "world-model",
+              "name": "世界模型",
+              "shortLabel": "世界模型",
+              "description": "机器人大脑里的'物理小宇宙'，它能预测'如果我这样动，物体会怎样运动'，相当于让机器人在脑子里先排练一遍再执行。",
+              "capabilityCan": [
+                "短时域物理动力学预测",
+                "视频生成作为可学习仿真器",
+                "作为策略训练的可微环境"
+              ],
+              "capabilityCannot": [
+                "长时域精确物理预测",
+                "完全替代传统物理引擎",
+                "与刚体/软体精确接触建模"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Google DeepMind Genie 2 交互式世界模型",
+                  "date": "2024-12",
+                  "source": "https://deepmind.google/discover/blog/genie-2-a-large-scale-foundation-world-model/"
+                },
+                {
+                  "title": "NVIDIA Cosmos 世界基础模型开放",
+                  "date": "2025-01",
+                  "source": "https://www.nvidia.com/en-us/ai/cosmos/"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bci",
+      "name": "脑机接口",
+      "nameEn": "Brain-Computer Interface",
+      "tagline": "在大脑和外部设备之间建立直接的信息通道",
+      "categories": [
+        {
+          "id": "perception",
+          "name": "信号采集",
+          "nameEn": "Signal Acquisition",
+          "children": [
+            {
+              "id": "bci-eeg-cap",
+              "name": "脑电帽",
+              "shortLabel": "脑电帽",
+              "description": "戴在头皮外的电极阵列，不开颅就能记录脑电波，是目前最普及、门槛最低的非侵入式 BCI 入口。",
+              "capabilityCan": [
+                "无创采集 8–256 通道脑电信号",
+                "用于注意力/睡眠/癫痫等场景",
+                "可穿戴化，消费级设备已落地"
+              ],
+              "capabilityCannot": [
+                "空间分辨率低，只能看到大面积脑区",
+                "易受头发、出汗、动作干扰",
+                "高带宽解码（如打字）带宽不足"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "OpenBCI Galea 多模态消费级脑电头显发布",
+                  "date": "2024-05",
+                  "source": "https://galea.co/"
+                },
+                {
+                  "title": "博睿康 NeuSen 256 通道干电极系统量产",
+                  "date": "2024-09",
+                  "source": "https://www.neuracle.cn/"
+                }
+              ]
+            },
+            {
+              "id": "bci-implant",
+              "name": "植入式电极",
+              "shortLabel": "植入电极",
+              "description": "通过手术把微电极阵列植入脑表面或皮层，直接'听见'单个神经元放电，是高精度 BCI 的金标准路径。",
+              "capabilityCan": [
+                "单神经元级别信号分辨率",
+                "支持千通道级高带宽脑控",
+                "长期植入（数年）可行性已验证"
+              ],
+              "capabilityCannot": [
+                "需要开颅手术，长期免疫反应",
+                "量产封装与医用级良率仍低",
+                "植入寿命与信号衰减待改善"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Neuralink 首例人体植入 N1 芯片",
+                  "date": "2024-01",
+                  "source": "https://neuralink.com/"
+                },
+                {
+                  "title": "脑虎科技 256 通道柔性电极完成临床试验",
+                  "date": "2024-12",
+                  "source": "https://neuroxess.com/"
+                }
+              ]
+            },
+            {
+              "id": "bci-fnirs",
+              "name": "近红外光谱",
+              "shortLabel": "fNIRS",
+              "description": "用近红外光穿透颅骨测量皮层血氧变化，像给大脑做'光学体检'，抗运动干扰比脑电强，便携性高。",
+              "capabilityCan": [
+                "无创、便携、抗运动干扰",
+                "与脑电互补，融合效果更好",
+                "适合儿童、康复场景"
+              ],
+              "capabilityCannot": [
+                "时间分辨率秒级，反应较慢",
+                "只能看皮层浅层（2–3 cm）",
+                "成熟度和标准化落后脑电"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Kernel Flow 2 头盔便携化产品发布",
+                  "date": "2023-11",
+                  "source": "https://www.kernel.com/"
+                },
+                {
+                  "title": "慧创医疗便携 fNIRS 用于康复医院推广",
+                  "date": "2024-08",
+                  "source": "https://www.huichuangyiliao.com/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "motion",
+          "name": "信号解码",
+          "nameEn": "Neural Decoding",
+          "children": [
+            {
+              "id": "bci-dl-decoder",
+              "name": "深度学习解码",
+              "shortLabel": "深度解码",
+              "description": "用神经网络把杂乱的脑信号翻译成光标、按键、文字或动作，相当于给大脑信号做'同声传译'。",
+              "capabilityCan": [
+                "端到端从原始信号映射到动作",
+                "小样本迁移学习降低定标时间",
+                "多模态融合提升解码鲁棒性"
+              ],
+              "capabilityCannot": [
+                "依赖个体定标，跨人泛化弱",
+                "长时间漂移需持续在线更新",
+                "模型可解释性与监管要求冲突"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "UCSF BrainGate 每分钟 62 词脑控打字",
+                  "date": "2023-08",
+                  "source": "https://www.nature.com/articles/s41586-023-06443-4"
+                },
+                {
+                  "title": "Neuralink 受试者脑控完成国际象棋对弈",
+                  "date": "2024-03",
+                  "source": "https://neuralink.com/"
+                }
+              ]
+            },
+            {
+              "id": "bci-motor-intent",
+              "name": "运动意图识别",
+              "shortLabel": "运动意图",
+              "description": "识别用户'想要动'的念头并转成机械动作，让瘫痪患者用意念控制机械臂、轮椅、计算机光标。",
+              "capabilityCan": [
+                "高自由度光标/机械臂控制",
+                "抓握、点按等精细动作模拟",
+                "临床试验完成灵巧手操作"
+              ],
+              "capabilityCannot": [
+                "长时使用疲劳度高",
+                "复杂自然动作仍显迟钝",
+                "家庭场景稳定性待验证"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "BrainGate 用户实现脑控机械臂自助进食",
+                  "date": "2023-10",
+                  "source": "https://www.braingate.org/"
+                },
+                {
+                  "title": "清华团队'北脑一号'完成三例患者脑控手机",
+                  "date": "2025-01",
+                  "source": "https://www.tsinghua.edu.cn/"
+                }
+              ]
+            },
+            {
+              "id": "bci-speech-decode",
+              "name": "语音解码",
+              "shortLabel": "语音解码",
+              "description": "从大脑信号中直接重建想说的话，让失语患者即使发不出声也能把内心的句子'投屏'到屏幕或合成语音。",
+              "capabilityCan": [
+                ">60 词/分钟脑控文字输出",
+                "声码合成重现个人音色",
+                "无声默读场景初步可用"
+              ],
+              "capabilityCannot": [
+                "词汇表仍受限，开放领域困难",
+                "植入密度要求高",
+                "多语种泛化仍处早期"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "UCSF 团队植入式语音 BCI 合成用户声音",
+                  "date": "2023-08",
+                  "source": "https://www.ucsf.edu/"
+                },
+                {
+                  "title": "Meta/FAIR 非侵入语音解码取得新基准",
+                  "date": "2024-05",
+                  "source": "https://ai.meta.com/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cognition",
+          "name": "刺激调控",
+          "nameEn": "Neuromodulation",
+          "children": [
+            {
+              "id": "bci-tms",
+              "name": "经颅磁刺激",
+              "shortLabel": "TMS",
+              "description": "用磁场无创激活或抑制特定脑区，像给大脑做'物理理疗'，已成抑郁症、卒中康复的临床工具。",
+              "capabilityCan": [
+                "无创、门诊可做",
+                "抑郁症、卒中康复临床获批",
+                "与脑电融合实现闭环治疗"
+              ],
+              "capabilityCannot": [
+                "空间聚焦度有限",
+                "深部脑区难以精准刺激",
+                "个体差异大，方案仍靠医生经验"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Magstim Theta Burst 新疗程获 FDA 扩展批准",
+                  "date": "2024-02",
+                  "source": "https://www.magstim.com/"
+                },
+                {
+                  "title": "国产依瑞德 TMS 进入医保目录",
+                  "date": "2024-07",
+                  "source": "https://www.yrdyiliao.com/"
+                }
+              ]
+            },
+            {
+              "id": "bci-closed-loop",
+              "name": "闭环神经反馈",
+              "shortLabel": "闭环反馈",
+              "description": "一边读取脑信号一边自动调节刺激参数，像大脑的'恒温空调'，已用于癫痫发作预警和帕金森症状控制。",
+              "capabilityCan": [
+                "实时监测+按需刺激",
+                "癫痫、帕金森适应性调控",
+                "比开环刺激能耗和副作用更低"
+              ],
+              "capabilityCannot": [
+                "算法验证周期极长",
+                "植入设备电池寿命受限",
+                "跨病种通用平台尚未形成"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Medtronic Percept 闭环 DBS 大规模商用",
+                  "date": "2023-06",
+                  "source": "https://www.medtronic.com/"
+                },
+                {
+                  "title": "NeuroPace RNS 用于重度抑郁适应症扩展",
+                  "date": "2024-10",
+                  "source": "https://www.neuropace.com/"
+                }
+              ]
+            },
+            {
+              "id": "bci-optogenetics",
+              "name": "光遗传调控",
+              "shortLabel": "光遗传",
+              "description": "把光敏蛋白基因导入特定神经元，再用光开关精准控制它们兴奋或抑制，是基础研究里最精细的神经操作工具。",
+              "capabilityCan": [
+                "细胞类型级精准控制",
+                "毫秒级时间分辨率",
+                "为 BCI 机制研究提供金标准"
+              ],
+              "capabilityCannot": [
+                "临床使用尚在早期人体试验",
+                "需基因改造，伦理门槛高",
+                "深部脑区光传递挑战大"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "GenSight Biologics 光遗传视力恢复 III 期",
+                  "date": "2024-04",
+                  "source": "https://www.gensight-biologics.com/"
+                },
+                {
+                  "title": "中科院神经所非人灵长类光遗传平台升级",
+                  "date": "2024-09",
+                  "source": "https://www.ion.ac.cn/"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quantum",
+      "name": "量子计算",
+      "nameEn": "Quantum Computing",
+      "tagline": "用量子叠加和纠缠并行处理经典计算机难以求解的问题",
+      "categories": [
+        {
+          "id": "perception",
+          "name": "量子硬件",
+          "nameEn": "Quantum Hardware",
+          "children": [
+            {
+              "id": "q-superconducting",
+              "name": "超导量子比特",
+              "shortLabel": "超导比特",
+              "description": "把超导电路冷却到接近绝对零度，用电流的两个量子态当作 0 和 1，是目前工业界主流的量子硬件路线。",
+              "capabilityCan": [
+                "千比特级规模集成",
+                "门操作速度快（ns 级）",
+                "与半导体工艺基本兼容"
+              ],
+              "capabilityCannot": [
+                "需要 mK 级稀释制冷机",
+                "比特相干时间仅百微秒级",
+                "布线、串扰制约继续放大"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "IBM Condor 1121 比特处理器发布",
+                  "date": "2023-12",
+                  "source": "https://research.ibm.com/blog/quantum-roadmap-2033"
+                },
+                {
+                  "title": "本源悟空 72 比特超导量子计算机上线",
+                  "date": "2024-01",
+                  "source": "https://quantum.originqc.com.cn/"
+                }
+              ]
+            },
+            {
+              "id": "q-ion-trap",
+              "name": "离子阱",
+              "shortLabel": "离子阱",
+              "description": "用电磁场把单个带电原子悬浮在真空里做量子比特，保真度极高，但规模化速度较慢。",
+              "capabilityCan": [
+                "量子门保真度业界领先（>99.9%）",
+                "全连接拓扑利于算法实现",
+                "室温环境友好"
+              ],
+              "capabilityCannot": [
+                "门速较慢（μs 级）",
+                "激光、真空系统集成复杂",
+                "百比特以上规模化仍困难"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Quantinuum H2 全连接 56 比特系统上线",
+                  "date": "2024-06",
+                  "source": "https://www.quantinuum.com/"
+                },
+                {
+                  "title": "IonQ Forte Enterprise 商用版本发布",
+                  "date": "2024-10",
+                  "source": "https://ionq.com/"
+                }
+              ]
+            },
+            {
+              "id": "q-photonic",
+              "name": "光量子",
+              "shortLabel": "光量子",
+              "description": "用单光子作为量子比特，天然抗环境噪声，在量子通信和专用采样任务上最先展示'量子优越性'。",
+              "capabilityCan": [
+                "室温运行，无需制冷",
+                "易与光纤/通信网络互联",
+                "专用采样任务已证优越性"
+              ],
+              "capabilityCannot": [
+                "通用量子计算架构仍在探索",
+                "片上大规模集成工艺难度高",
+                "量子门操控效率待提升"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "PsiQuantum 宣布硅基光量子百万比特路线图",
+                  "date": "2024-03",
+                  "source": "https://www.psiquantum.com/"
+                },
+                {
+                  "title": "九章三号 255 光子采样实验",
+                  "date": "2023-10",
+                  "source": "https://www.ustc.edu.cn/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "motion",
+          "name": "量子软件",
+          "nameEn": "Quantum Software",
+          "children": [
+            {
+              "id": "q-algorithm",
+              "name": "量子算法",
+              "shortLabel": "量子算法",
+              "description": "专门为量子计算机设计的'解题方法'，比如 Shor 分解大数、Grover 搜索，是量子计算存在意义的核心。",
+              "capabilityCan": [
+                "特定问题理论指数级加速",
+                "组合优化、化学模拟已有实用原型",
+                "变分量子算法可用于 NISQ"
+              ],
+              "capabilityCannot": [
+                "通用加速场景仍有限",
+                "噪声下理论加速常被抵消",
+                "算法-硬件协同设计尚不成熟"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Google Willow 芯片演示量子纠错阈值突破",
+                  "date": "2024-12",
+                  "source": "https://blog.google/technology/research/google-willow-quantum-chip/"
+                },
+                {
+                  "title": "Quantinuum + Microsoft 逻辑比特错误率创新低",
+                  "date": "2024-04",
+                  "source": "https://www.microsoft.com/"
+                }
+              ]
+            },
+            {
+              "id": "q-error-correction",
+              "name": "量子纠错",
+              "shortLabel": "量子纠错",
+              "description": "把若干脆弱的物理量子比特合成为一个更稳定的'逻辑比特'，是通用量子计算机能否实用化的决定性技术。",
+              "capabilityCan": [
+                "小规模表面码纠错已实验验证",
+                "逻辑错误率低于物理比特",
+                "纠错开销理论上可收敛"
+              ],
+              "capabilityCannot": [
+                "百万级物理比特规模化尚远",
+                "实时解码延迟与带宽瓶颈",
+                "逻辑门级纠错仍处研究期"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Google Willow 首次演示增加比特反而降错",
+                  "date": "2024-12",
+                  "source": "https://blog.google/"
+                },
+                {
+                  "title": "Harvard/QuEra 中性原子 48 逻辑比特实验",
+                  "date": "2023-12",
+                  "source": "https://www.quera.com/"
+                }
+              ]
+            },
+            {
+              "id": "q-programming",
+              "name": "量子编程语言",
+              "shortLabel": "编程语言",
+              "description": "让普通开发者也能写量子程序的工具链，如 Qiskit、Cirq、OriginQ 的本源语言，提供电路描述、模拟、编译等能力。",
+              "capabilityCan": [
+                "主流语言 SDK 已开源",
+                "电路模拟器支持 30+ 比特",
+                "与经典-量子混合工作流打通"
+              ],
+              "capabilityCannot": [
+                "跨平台代码可移植性差",
+                "调试工具链相对经典计算落后",
+                "企业级工程规范尚未形成"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "IBM Qiskit 1.0 发布并稳定 API",
+                  "date": "2024-02",
+                  "source": "https://www.ibm.com/quantum/qiskit"
+                },
+                {
+                  "title": "本源 QPanda 2 开源量子开发套件发布",
+                  "date": "2024-08",
+                  "source": "https://qpanda.originqc.com.cn/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cognition",
+          "name": "量子应用",
+          "nameEn": "Quantum Applications",
+          "children": [
+            {
+              "id": "q-simulation",
+              "name": "量子模拟",
+              "shortLabel": "量子模拟",
+              "description": "用量子计算机模拟分子、材料、金融系统的量子行为，是量子计算机最可能率先商用的方向。",
+              "capabilityCan": [
+                "小分子基态能量计算可行",
+                "关联电子体系模拟优势显现",
+                "已与药企、材料企业合作试点"
+              ],
+              "capabilityCannot": [
+                "工业级精度仍需纠错量子机",
+                "经典 HPC 近似方法持续追赶",
+                "端到端工作流成本高"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "IBM + Cleveland Clinic 医疗 QPU 上线",
+                  "date": "2023-04",
+                  "source": "https://www.ibm.com/"
+                },
+                {
+                  "title": "Pasqal 与 Saudi Aramco 化学模拟合作",
+                  "date": "2024-07",
+                  "source": "https://www.pasqal.com/"
+                }
+              ]
+            },
+            {
+              "id": "q-optimization",
+              "name": "量子优化",
+              "shortLabel": "量子优化",
+              "description": "用量子退火或变分算法求解物流、金融、排班等组合优化问题，是近期商业落地最热的方向。",
+              "capabilityCan": [
+                "量子退火机已大规模商用",
+                "变分算法在 NISQ 机上跑通",
+                "与经典求解器混合提效案例增多"
+              ],
+              "capabilityCannot": [
+                "对大多数问题尚无理论加速证明",
+                "工业级基准仍有争议",
+                "对问题建模要求高"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "D-Wave Advantage2 Prototype 发布",
+                  "date": "2024-05",
+                  "source": "https://www.dwavesys.com/"
+                },
+                {
+                  "title": "玻色量子相干伊辛机交付金融机构",
+                  "date": "2024-09",
+                  "source": "https://www.boseq.com/"
+                }
+              ]
+            },
+            {
+              "id": "q-crypto",
+              "name": "量子密码",
+              "shortLabel": "量子密码",
+              "description": "既包括利用量子不可克隆原理做密钥分发（QKD），也包括抗量子攻击的后量子密码（PQC），关系未来通信安全。",
+              "capabilityCan": [
+                "QKD 城域骨干网已部署",
+                "PQC 算法完成 NIST 标准化",
+                "卫星 QKD 完成工程验证"
+              ],
+              "capabilityCannot": [
+                "QKD 终端成本仍高",
+                "长距离中继依赖可信节点",
+                "PQC 大规模替换需多年迁移"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "NIST 正式发布 3 套 PQC 标准算法",
+                  "date": "2024-08",
+                  "source": "https://www.nist.gov/"
+                },
+                {
+                  "title": "中国'济南一号'QKD 卫星在轨运行",
+                  "date": "2023-07",
+                  "source": "https://www.ustc.edu.cn/"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fusion",
+      "name": "核聚变",
+      "nameEn": "Nuclear Fusion",
+      "tagline": "让地球上重现太阳里的能量过程，提供几乎无限的清洁电力",
+      "categories": [
+        {
+          "id": "perception",
+          "name": "等离子体约束",
+          "nameEn": "Plasma Confinement",
+          "children": [
+            {
+              "id": "f-tokamak",
+              "name": "托卡马克",
+              "shortLabel": "托卡马克",
+              "description": "用强磁场把 1 亿度以上的等离子体约束在甜甜圈形状的真空室内，是目前最接近商业化的聚变路线。",
+              "capabilityCan": [
+                "稳态高约束模式（H-mode）已常态化",
+                "百秒级高性能放电已实现",
+                "ITER、CFETR 等项目推进中"
+              ],
+              "capabilityCannot": [
+                "Q>1 净能量持续输出尚未实现",
+                "第一壁与偏滤器寿命不够",
+                "稳态运行稳定性挑战大"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "EAST 装置 403 秒稳态高约束运行破纪录",
+                  "date": "2023-04",
+                  "source": "https://www.hf.cas.cn/"
+                },
+                {
+                  "title": "ITER 首等离子体时间推迟至 2035 前后",
+                  "date": "2024-07",
+                  "source": "https://www.iter.org/"
+                }
+              ]
+            },
+            {
+              "id": "f-stellarator",
+              "name": "仿星器",
+              "shortLabel": "仿星器",
+              "description": "把磁场线圈绕成复杂三维形状来约束等离子体，不依赖电流，天然更适合稳态运行，但工程难度极高。",
+              "capabilityCan": [
+                "等离子体稳态运行天然优势",
+                "避免电流驱动不稳定性",
+                "小型商业化装置开始涌现"
+              ],
+              "capabilityCannot": [
+                "三维线圈制造与精度要求苛刻",
+                "诊断与加热系统布局复杂",
+                "Q>1 尚未实现"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Wendelstein 7-X 8 分钟稳态高密度运行",
+                  "date": "2023-02",
+                  "source": "https://www.ipp.mpg.de/"
+                },
+                {
+                  "title": "Type One Energy B 轮融资加码商用仿星器",
+                  "date": "2024-09",
+                  "source": "https://www.typeoneenergy.com/"
+                }
+              ]
+            },
+            {
+              "id": "f-inertial",
+              "name": "惯性约束",
+              "shortLabel": "惯性约束",
+              "description": "用超高能激光从各个方向瞬间压缩燃料靶丸，在微秒内完成聚变放能，2022 年首次实现'点火'。",
+              "capabilityCan": [
+                "2022 年人类首次实现靶丸净能量增益",
+                "诊断数据对武器物理意义重大",
+                "重复频率激光驱动快速进步"
+              ],
+              "capabilityCannot": [
+                "单发能耗高，能量回收率低",
+                "商用电站级重频仍为瓶颈",
+                "靶丸量产与供料体系尚未建立"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "NIF 宣布 1.5 倍点火能量增益新记录",
+                  "date": "2023-12",
+                  "source": "https://lasers.llnl.gov/"
+                },
+                {
+                  "title": "Focused Energy 与德国政府合作推进 IFE",
+                  "date": "2024-06",
+                  "source": "https://focused-energy.world/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "motion",
+          "name": "材料与工程",
+          "nameEn": "Materials & Engineering",
+          "children": [
+            {
+              "id": "f-first-wall",
+              "name": "第一壁材料",
+              "shortLabel": "第一壁",
+              "description": "直接面对上亿度等离子体和高能中子的内壁材料，决定了聚变堆寿命和安全性，是最硬的工程卡脖子点之一。",
+              "capabilityCan": [
+                "钨基材料实验堆已常态应用",
+                "碳化硅复合材料开始试用",
+                "等离子体-壁相互作用物理模型成熟"
+              ],
+              "capabilityCannot": [
+                "中子辐照寿命仍短（<FPY）",
+                "大规模制造工艺还在验证",
+                "氚滞留问题未完全解决"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "ITER 完成钨基偏滤器首批到货",
+                  "date": "2024-03",
+                  "source": "https://www.iter.org/"
+                },
+                {
+                  "title": "核工业西南物理研究院 SiCf/SiC 包层样件交付",
+                  "date": "2024-11",
+                  "source": "https://www.swip.ac.cn/"
+                }
+              ]
+            },
+            {
+              "id": "f-tritium",
+              "name": "氚增殖",
+              "shortLabel": "氚增殖",
+              "description": "聚变反应消耗氚，但自然界几乎没有氚，必须在反应堆包层里用锂自己'生'出氚，是商用堆闭环的关键。",
+              "capabilityCan": [
+                "固态和液态包层方案并行发展",
+                "氚回收工艺走出实验室",
+                "国际协同建立氚供应链规划"
+              ],
+              "capabilityCannot": [
+                "产氚比（TBR>1.0）尚未工程验证",
+                "氚安全监管体系仍在完善",
+                "氚存储、运输成本高"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "ITER TBM 中国包层模块设计评审通过",
+                  "date": "2024-05",
+                  "source": "https://www.iter.org/"
+                },
+                {
+                  "title": "Kyoto Fusioneering 液态锂铅包层试验装置运行",
+                  "date": "2024-09",
+                  "source": "https://kyotofusioneering.com/"
+                }
+              ]
+            },
+            {
+              "id": "f-magnet",
+              "name": "超导磁体",
+              "shortLabel": "超导磁体",
+              "description": "产生强磁场约束等离子体的核心部件，新一代高温超导带材正把聚变装置体积和成本推入商业可行区间。",
+              "capabilityCan": [
+                "高温超导 REBCO 带材百公里级量产",
+                "20T 以上磁场工程验证",
+                "紧凑型聚变装置路线依赖此技术"
+              ],
+              "capabilityCannot": [
+                "带材均匀性、制冷系统成本仍高",
+                "长期辐照与循环载荷数据不足",
+                "国产高温超导带材良率有差距"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "Commonwealth Fusion SPARC 首个 TF 线圈通过测试",
+                  "date": "2023-09",
+                  "source": "https://cfs.energy/"
+                },
+                {
+                  "title": "上海超导 REBCO 带材出货突破 1000 km",
+                  "date": "2024-10",
+                  "source": "https://www.shsctec.com/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cognition",
+          "name": "能量转换",
+          "nameEn": "Energy Conversion",
+          "children": [
+            {
+              "id": "f-heat-capture",
+              "name": "热能收集",
+              "shortLabel": "热能收集",
+              "description": "把聚变产生的巨量中子动能转化为热能、再通过常规汽轮机发电，是最成熟但效率受限的路径。",
+              "capabilityCan": [
+                "沿用火电/核电汽轮机技术",
+                "与氚增殖包层协同设计",
+                "工程可行性最高"
+              ],
+              "capabilityCannot": [
+                "热电转换效率 30–40% 上限",
+                "高温材料可靠性挑战大",
+                "整体热力循环尚未在聚变堆验证"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "UKAEA STEP 概念设计确认朗肯循环方案",
+                  "date": "2024-02",
+                  "source": "https://step.ukaea.uk/"
+                },
+                {
+                  "title": "中国 CFETR 热工水力实验平台投运",
+                  "date": "2023-11",
+                  "source": "https://www.hf.cas.cn/"
+                }
+              ]
+            },
+            {
+              "id": "f-direct-conversion",
+              "name": "直接能量转换",
+              "shortLabel": "直接转换",
+              "description": "跳过蒸汽循环，直接把带电粒子动能转成电流，可把效率推到 60% 以上，是长期目标，工程难度极高。",
+              "capabilityCan": [
+                "理论效率上限远高于热循环",
+                "适合先进燃料（p-B11）路线",
+                "原理级实验多次验证"
+              ],
+              "capabilityCannot": [
+                "工程级大功率样机空白",
+                "强磁场高能粒子收集难度大",
+                "尚无商业聚变堆设计采用"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "TAE Technologies Copernicus 装置设计定稿",
+                  "date": "2024-05",
+                  "source": "https://tae.com/"
+                },
+                {
+                  "title": "HB11 Energy 演示 p-B11 反应产额提升",
+                  "date": "2023-04",
+                  "source": "https://hb11.energy/"
+                }
+              ]
+            },
+            {
+              "id": "f-neutron-shield",
+              "name": "中子屏蔽",
+              "shortLabel": "中子屏蔽",
+              "description": "聚变反应放出大量高能中子，必须用特制材料层层屏蔽，保护磁体、电子和人员，是安全核心部件。",
+              "capabilityCan": [
+                "水冷/硼化混凝土方案成熟",
+                "新型氢化物屏蔽密度更高",
+                "与生物屏蔽一体化设计能力提升"
+              ],
+              "capabilityCannot": [
+                "紧凑装置内部空间极为有限",
+                "长期辐照下性能衰减待验证",
+                "成本占比仍较高"
+              ],
+              "recentAchievements": [
+                {
+                  "title": "UKAEA 发布高性能氢化物中子屏蔽样品",
+                  "date": "2023-10",
+                  "source": "https://www.gov.uk/ukaea"
+                },
+                {
+                  "title": "SPARC 紧凑屏蔽层工程设计定型",
+                  "date": "2024-08",
+                  "source": "https://cfs.energy/"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
