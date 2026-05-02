@@ -1,35 +1,26 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-
-type Health = { status: string }
+import { useState } from 'react'
+import { ChatPanel } from './components/Agent/ChatPanel'
+import { TechExplorer } from './components/TechExplorer/TechExplorer'
 
 function App() {
-  const [health, setHealth] = useState<string>('...')
-  const [techCount, setTechCount] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((r) => r.json() as Promise<Health>)
-      .then((d) => setHealth(d.status))
-      .catch((e) => setError(String(e)))
-
-    fetch('/api/technologies')
-      .then((r) => r.json())
-      .then((d) => setTechCount(Array.isArray(d) ? d.length : 0))
-      .catch((e) => setError(String(e)))
-  }, [])
+  const [activeTech, setActiveTech] = useState<string | null>(null)
 
   return (
-    <div style={{ padding: 24, fontFamily: 'system-ui' }}>
-      <h1>TechPolicyBoard</h1>
-      <p>
-        Backend health: <strong>{health}</strong>
-      </p>
-      <p>
-        Technologies loaded: <strong>{techCount ?? '...'}</strong>
-      </p>
-      {error && <p style={{ color: 'crimson' }}>Error: {error}</p>}
+    <div
+      style={{
+        height: '100vh',
+        display: 'grid',
+        gridTemplateColumns: '320px 1fr',
+        background: '#070b18',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+        overflow: 'hidden',
+      }}
+    >
+      <ChatPanel
+        activeTech={activeTech}
+        onSelectTech={(id) => setActiveTech(id)}
+      />
+      <TechExplorer visible={activeTech === 'embodied-ai'} />
     </div>
   )
 }

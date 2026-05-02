@@ -3,34 +3,97 @@
     "id": "embodied-ai",
     "name": "具身智能",
     "description": "让 AI 拥有物理身体，能在真实世界中感知、决策、行动。",
-    "category": "root",
-    "parentId": null,
     "children": [
       {
         "id": "perception",
         "name": "感知系统",
+        "description": "机器人理解外部世界的输入通道。",
         "children": [
-          { "id": "cv", "name": "计算机视觉", "description": "用摄像头和算法让机器人看见。" },
-          { "id": "force-sensor", "name": "力觉传感器", "description": "感知接触力的大小和方向。" },
-          { "id": "tactile", "name": "触觉反馈", "description": "模拟人类触觉的电子皮肤。" }
+          {
+            "id": "cv",
+            "name": "计算机视觉",
+            "description": "用摄像头和算法让机器人看见、识别和理解场景。",
+            "capability": "可识别常见物体、估计位姿，开放场景理解仍受限于光照与遮挡。",
+            "achievements": [
+              { "title": "Open-vocabulary detection 大幅提升", "date": "2025", "source": "https://arxiv.org" }
+            ]
+          },
+          {
+            "id": "force-sensor",
+            "name": "力觉传感器",
+            "description": "感知接触力的大小和方向，机器人抓握所需。",
+            "capability": "工业级六维力传感成熟，低成本高分辨触觉仍待突破。",
+            "achievements": [
+              { "title": "MEMS 触觉阵列商用化", "date": "2024", "source": "https://example.com" }
+            ]
+          },
+          {
+            "id": "tactile",
+            "name": "触觉反馈",
+            "description": "模拟人类触觉的电子皮肤，让机器人感知接触纹理。",
+            "capability": "实验室原型可识别粗糙度，规模化制造仍是难点。",
+            "achievements": []
+          }
         ]
       },
       {
         "id": "motion",
         "name": "运动控制",
+        "description": "让机器人物理运动起来，��电机到全身协调。",
         "children": [
-          { "id": "servo", "name": "伺服电机", "description": "精确控制转动角度和速度。" },
-          { "id": "joint-control", "name": "关节控制", "description": "多关节协调运动的算法。" },
-          { "id": "path-planning", "name": "路径规划", "description": "从 A 到 B 的最优运动轨迹。" }
+          {
+            "id": "servo",
+            "name": "伺服电机",
+            "description": "精确控制转动角度和速度，是关节驱动的基础。",
+            "capability": "高扭矩密度电机依赖稀土材料，国产化率快速提升。",
+            "achievements": [
+              { "title": "国产关节模组成本下降 40%", "date": "2025", "source": "https://example.com" }
+            ]
+          },
+          {
+            "id": "joint-control",
+            "name": "关节控制",
+            "description": "多关节协调运动的算法，决定机器人动作是否平稳。",
+            "capability": "MPC + 学习方法可处理动态平衡，复杂地形仍需手工调参。",
+            "achievements": []
+          },
+          {
+            "id": "path-planning",
+            "name": "路径规划",
+            "description": "从 A 到 B 的最优运动轨迹规划。",
+            "capability": "结构化场景近实时求解，动态人群场景仍有挑战。",
+            "achievements": []
+          }
         ]
       },
       {
         "id": "decision",
         "name": "决策智能",
+        "description": "让机器人理解任务、做出选择的大脑。",
         "children": [
-          { "id": "llm", "name": "大语言模型", "description": "理解自然语言指令。" },
-          { "id": "rl", "name": "强化学习", "description": "通过试错学习最优策略。" },
-          { "id": "world-model", "name": "世界模型", "description": "对物理世界的内部模拟。" }
+          {
+            "id": "llm",
+            "name": "大语言模型",
+            "description": "理解自然语言指令并拆解成可执行的子任务。",
+            "capability": "高层任务规划已可用，长时序任务跟踪稳定性不足。",
+            "achievements": [
+              { "title": "VLA 模型在抓取任务上接近人类水平", "date": "2025", "source": "https://example.com" }
+            ]
+          },
+          {
+            "id": "rl",
+            "name": "强化学习",
+            "description": "通过试错让机器人学习最优策略。",
+            "capability": "仿真到现实迁移仍是核心瓶颈。",
+            "achievements": []
+          },
+          {
+            "id": "world-model",
+            "name": "世界模型",
+            "description": "对物理世界的内部模拟，用于预测和规划。",
+            "capability": "短时预测可用，长时序高保真预测尚未实现。",
+            "achievements": []
+          }
         ]
       }
     ]
